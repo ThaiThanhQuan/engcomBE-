@@ -5,17 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Routing\Controller;
-
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Exception;
-
-
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Auth;
-
 
 class AuthController extends Controller
 {
@@ -33,10 +27,6 @@ class AuthController extends Controller
             'email' => 'required|string|email|',
             'password' => 'required|string|confirmed|min:3',
         ]);
-
-        if($validator->fails()){
-            return response()->json($validator->errors(), 422);
-        }
 
         
         try {
@@ -60,20 +50,18 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 80
         ]);
 
-      
-
     }
 
     public function login()
     {
         $credentials = request(['email', 'password']);
 
-        if (!$token = auth('api')->attempt($credentials)) {
+        if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
         return $this->respondWithToken($token);
     }
+
     public function profile()
     {
         return response()->json(auth('api')->user());
