@@ -1,5 +1,6 @@
 <?php
-
+use Illuminate\Support\Facades\Facades;
+use Illuminate\Support\ServiceProvider;
 return [
 
     /*
@@ -104,6 +105,11 @@ return [
             explode(',', env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
+
+   'providers' => ServiceProvider::defaultProviders()->merge([
+    App\Providers\AppServiceProvider::class,
+    Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+])->toArray(),
 
     /*
     |--------------------------------------------------------------------------
