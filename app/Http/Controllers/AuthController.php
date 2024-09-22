@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
 class AuthController extends Controller
@@ -102,16 +103,19 @@ class AuthController extends Controller
             $email = $user->getEmail();
             $name = $user->getname();
             $uid = $user->getid();
+
             // Kiểm tra xem người dùng đã tồn tại trong DB chưa dựa trên email hoặc uid
             $existingUser = User::where('email', $email)->orWhere('uid', $uid)->first();
-
+            
             if ($existingUser) {
                 // Người dùng đã tồn tại, trả về thông tin người dùng
                 return response()->json([
+                    $tokenA = JWTAuth::fromUser($existingUser),
                     'message' => 'User already exists',
                     'uid' => $existingUser->uid,
                     'email' => $existingUser->email,
                     'name' => $existingUser->name,
+                    
                 ]);
             } else {
                 // Người dùng mới, lưu thông tin vào DB
@@ -121,15 +125,17 @@ class AuthController extends Controller
                     'name' => $name,
                     'token' => $token,
                 ]);
-
+                
                 // Trả về uid và các thông tin khác
+                
+                
                 return response()->json([
                     'message' => 'New user created',
                     'uid' => $newUser->uid,
                     'email' => $newUser->email,
                     'name' => $newUser->name,
-                    'token' =>  $newUser->token,
-
+                    $tokenA = JWTAuth::fromUser($newUser),
+                    
                 ]);
             }
         } catch (Exception $e) {
