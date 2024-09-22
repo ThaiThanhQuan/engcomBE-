@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function __construct()
     {
 
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'getSocialUser']]);
     }
 
     public function register(Request $request)
@@ -83,21 +83,18 @@ class AuthController extends Controller
     }
     public function getSocialUser(Request $request)
     {
-        // Nhận access_token từ frontend gửi lên
-        $accessToken = $request->input('accessToken');
-        $provider = $request->input('provider'); // 'facebook' hoặc 'google'
+        // Nhận access_token, uid và provider từ frontend gửi lên
+        $token = $request->input('token');
+        $provider = $request->input('provider');
 
         try {
             // Xác thực người dùng với access_token thông qua Socialite
-            $user = Socialite::driver($provider)->stateless()->userFromToken($accessToken);
-
-            // Lấy uid và thông tin cần thiết từ user
-            $uid = $user->getId();
-            // $photo = $user->getAvatar();
+            $user = Socialite::driver($provider)->stateless()->userFromToken($token);
+            // Lấy email và name từ user
             $email = $user->getEmail();
-            $name = $user->getName();
-
-            // Kiểm tra xem người dùng đã tồn tại trong DB chưa dựa trên email hoặc provider_id
+            $name = $user->getname();
+            $uid = $user->getid();
+            // Kiểm tra xem người dùng đã tồn tại trong DB chưa dựa trên email hoặc uid
             $existingUser = User::where('email', $email)->orWhere('uid', $uid)->first();
 
             if ($existingUser) {
@@ -111,26 +108,27 @@ class AuthController extends Controller
             } else {
                 // Người dùng mới, lưu thông tin vào DB
                 $newUser = User::create([
-                    'provider_id' => $uid,   
-                    'email' => $email,       
-                    'name' => $name,    
-                    // 'avatar' => $photo,     
-                    'provider' => $provider  
+                    'uid' => $uid,
+                    'email' => $email,
+                    'name' => $name,
+                    'token' => $token,
                 ]);
-            // Trả về uid và các thông tin khác
-            return response()->json([
-                'message' => 'New user created',
-                'uid' => $newUser->provider_id,
-                'email' => $newUser->email,
-                'name' => $newUser->name,
-                // 'avatar' => $newUser->photo
-            ]);
-        }
+
+                // Trả về uid và các thông tin khác
+                return response()->json([
+                    'message' => 'New user created',
+                    'uid' => $newUser->uid,
+                    'email' => $newUser->email,
+                    'name' => $newUser->name,
+                    'token' =>  $newUser->token,
+
+                ]);
+            }
         } catch (Exception $e) {
-            // Xử lý lỗi nếu token không hợp lệ hoặc có lỗi khác
-            return response()->json(['error' => 'Invalid access token or provider'], 400);
+            return response()->json(['error' => 'Invalid access token or provider: ' . $e->getMessage()], 400);
         }
     }
+
 
 
 }
