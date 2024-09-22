@@ -16,43 +16,49 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-
         $this->middleware('auth:api', ['except' => ['login', 'register', 'getSocialUser']]);
     }
-
     public function register(Request $request)
     {
-        
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'email' => 'required|string|email|',
             'password' => 'required|string|confirmed|min:3',
         ]);
 
-        
+
         try {
             $user = User::create([
                 'name' => $request->get('name'),
-                'email' => $request->get('email'),                
+                'email' => $request->get('email'),
                 'password' => Hash::make($request->get('password')),
             ]);
-        } catch (Exception $e) {        
-            return response()->json(['error' => 'register that bai'], 409);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'error'], 409);
         }
-
-
-        //tao token
+        $userdata = User::find($user->id);
+        // tao token
         $token = JWTAuth::fromUser($user);
         return response()->json([
             'message' => 'register thanh cong',
-            'user' => $user,
+            'user' => [
+                'name' => $userdata->name,
+                'phonenumber' => $userdata->phonenumber,
+                'email' => $userdata->email,
+                'address' => $userdata->address,
+                'sex' => $userdata->sex,
+                'role_id' => $userdata->role_id,
+                'avatar' => $userdata->avatar,
+                'created_at' => $userdata->created_at,
+                'updated_at' => $userdata->updated_at
+            ],
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 80
         ]);
 
     }
-
     public function login()
     {
         $credentials = request(['email', 'password']);
@@ -60,9 +66,22 @@ class AuthController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return $this->respondWithToken($token);
+        $user = auth()->user();
+        return response()->json([
+            'token' => $token,
+            'user' => [
+                'name' => $user->name,
+                'phonenumber' => $user->phonenumber,
+                'email' => $user->email,
+                'address' => $user->address,
+                'sex' => $user->sex,
+                'role_id' => $user->role_id,
+                'avatar' => $user->avatar,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ]
+        ]);
     }
-
     public function profile()
     {
         return response()->json(auth('api')->user());
@@ -84,38 +103,29 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
-
-
-
-
     }
-
     public function getSocialUser(Request $request)
     {
-        // Nhận access_token, uid và provider từ frontend gửi lên
-        $token = $request->input('token');
-        $provider = $request->input('provider');
+        // Nhận uid từ frontend gửi lên
+        $uid = $request->input('uid');
+        $email = $request->input('email');
+        $name = $request->input('name');
+        $avatar = $request->input('avatar');
 
         try {
-            // Xác thực người dùng với access_token thông qua Socialite
-            $user = Socialite::driver($provider)->stateless()->userFromToken($token);
-            // Lấy email và name từ user
-            $email = $user->getEmail();
-            $name = $user->getname();
-            $uid = $user->getid();
+            // Kiểm tra xem người dùng đã tồn tại trong DB chưa
+            $existingUser = User::where('uid', $uid)->first();
 
-            // Kiểm tra xem người dùng đã tồn tại trong DB chưa dựa trên email hoặc uid
-            $existingUser = User::where('email', $email)->orWhere('uid', $uid)->first();
-            
             if ($existingUser) {
-                // Người dùng đã tồn tại, trả về thông tin người dùng
                 return response()->json([
-                    $tokenA = JWTAuth::fromUser($existingUser),
                     'message' => 'User already exists',
-                    'uid' => $existingUser->uid,
-                    'email' => $existingUser->email,
-                    'name' => $existingUser->name,
-                    
+                    'status' => '1',
+                    'user' => [
+                        'uid' => $existingUser->uid,
+                        'email' => $existingUser->email,
+                        'name' => $existingUser->name,
+                        'avatar' => $existingUser->avatar,                   
+                    ]
                 ]);
             } else {
                 // Người dùng mới, lưu thông tin vào DB
@@ -123,31 +133,31 @@ class AuthController extends Controller
                     'uid' => $uid,
                     'email' => $email,
                     'name' => $name,
-                    'token' => $token,
+                    'avatar' => $avatar,
                 ]);
-                
-                // Trả về uid và các thông tin khác
-                
-                
+
+                // Tạo token JWT cho người dùng mới
+                $token = JWTAuth::fromUser($newUser);
                 return response()->json([
                     'message' => 'New user created',
-                    'uid' => $newUser->uid,
-                    'email' => $newUser->email,
-                    'name' => $newUser->name,
-                    $tokenA = JWTAuth::fromUser($newUser),
-                    
+                    'access_token' => $token,
+                    'status' => '2',
+                    'user' => [
+                        'uid' => $newUser->uid,
+                        'email' => $newUser->email,
+                        'name' => $newUser->name,
+                        'avatar' => $newUser->avatar,
+                    ]
                 ]);
             }
         } catch (Exception $e) {
-            return response()->json(['error' => 'Invalid access token or provider: ' . $e->getMessage()], 400);
+            return response()->json(['error' => 'Error processing request: ' . $e->getMessage()], 400);
         }
     }
-
-
 
 }
 
 
 
-    
+
 
