@@ -16,7 +16,7 @@ class AuthController extends Controller
     public function __construct()
     {
 
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'getSocialUser']]);
     }
 
     public function register(Request $request)
@@ -84,7 +84,64 @@ class AuthController extends Controller
             'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
 
-}}
+
+
+
+    }
+
+    public function getSocialUser(Request $request)
+    {
+        // Nhận access_token, uid và provider từ frontend gửi lên
+        $token = $request->input('token');
+        $provider = $request->input('provider');
+
+        try {
+            // Xác thực người dùng với access_token thông qua Socialite
+            $user = Socialite::driver($provider)->stateless()->userFromToken($token);
+            // Lấy email và name từ user
+            $email = $user->getEmail();
+            $name = $user->getname();
+            $uid = $user->getid();
+            // Kiểm tra xem người dùng đã tồn tại trong DB chưa dựa trên email hoặc uid
+            $existingUser = User::where('email', $email)->orWhere('uid', $uid)->first();
+
+            if ($existingUser) {
+                // Người dùng đã tồn tại, trả về thông tin người dùng
+                return response()->json([
+                    'message' => 'User already exists',
+                    'uid' => $existingUser->uid,
+                    'email' => $existingUser->email,
+                    'name' => $existingUser->name,
+                ]);
+            } else {
+                // Người dùng mới, lưu thông tin vào DB
+                $newUser = User::create([
+                    'uid' => $uid,
+                    'email' => $email,
+                    'name' => $name,
+                    'token' => $token,
+                ]);
+
+                // Trả về uid và các thông tin khác
+                return response()->json([
+                    'message' => 'New user created',
+                    'uid' => $newUser->uid,
+                    'email' => $newUser->email,
+                    'name' => $newUser->name,
+                    'token' =>  $newUser->token,
+
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Invalid access token or provider: ' . $e->getMessage()], 400);
+        }
+    }
+
+
+
+}
+
+
 
     
 
