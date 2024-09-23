@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
 use App\Http\Controllers\AuthController;
+
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NotebookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,12 +22,18 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('social', [AuthController::class, 'getSocialUser']);
-    Route::post('changeRole', [AuthController::class, 'updateRole']);
-});
 
-Route::group(['prefix' => 'user'], function () {
-   Route::resource('blog', BlogController::class);
+    Route::post('notebook/store', [NotebookController::class, 'store']);
+    Route::post('notebook/show', [NotebookController::class, 'show']);
+    Route::post('notebook/update', [NotebookController::class, 'update']);
+    Route::post('notebook/destroy', [NotebookController::class, 'destroy']);
+
+    Route::resource('blog', BlogController::class);
+
+    Route::post('changeRole', [AuthController::class, 'updateRole']);
 });
 Route::group(['prefix' => 'admin'], function () {
     Route::resource('user', UserController::class);
 });
+
+   
