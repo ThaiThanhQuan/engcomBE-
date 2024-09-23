@@ -18,11 +18,16 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $fillable = [
         'name',
-        'email',
+        'username',
         'password',
+        'phonenumber',
+        'email',
+        'address',
+        'sex',
+        'role_id',
         'uid',
-        'provider',
-        'token'
+        'token',
+        'avatar',      
     ];
 
     /**
@@ -34,7 +39,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
-
+    public $timestamps = true;
     /**
      * Get the attributes that should be cast.
      *
