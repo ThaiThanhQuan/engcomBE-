@@ -53,8 +53,9 @@ class NotebookController extends Controller
         return response()->json([
             'message' => 'success',
             'notebook' => $notebook
-        ]);
+        ], 200);
     }
+    
 
     public function update(Request $request, $id) {
         $validated = $request->validate([
@@ -65,6 +66,7 @@ class NotebookController extends Controller
     
         $notebook = Notebook::find($id);
     
+
         if (!$notebook) {
             return response()->json(['message' => 'Notebook không tìm thấy'], 404);
         }
@@ -85,7 +87,6 @@ class NotebookController extends Controller
     {
         if (empty($user_id) || !is_numeric($user_id)) {
             return response()->json(['message' => 'user_id không hợp lệ'], 422);
-        }
 
         $notebook = Notebook::find($id);
 
@@ -101,4 +102,5 @@ class NotebookController extends Controller
             'data' => $notebook,
         ]);
     }
+}
 }

@@ -23,11 +23,9 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
-    Route::post('notebook/store', [NotebookController::class, 'store']);
-    Route::get('notebook/show/{user_id}', [NotebookController::class, 'show']);
-    Route::put('notebook/update/{id}', [NotebookController::class, 'update']);
-    Route::delete('notebook/{id}/{user_id}', [NotebookController::class, 'destroy']);
 
+    Route::resource('notebook', NotebookController::class);
+    
     Route::resource('blog', BlogController::class);
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
 
