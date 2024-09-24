@@ -24,11 +24,12 @@ Route::group([
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
     Route::post('notebook/store', [NotebookController::class, 'store']);
-    Route::post('notebook/show', [NotebookController::class, 'show']);
-    Route::post('notebook/update', [NotebookController::class, 'update']);
-    Route::post('notebook/destroy', [NotebookController::class, 'destroy']);
+    Route::get('notebook/show/{user_id}', [NotebookController::class, 'show']);
+    Route::put('notebook/update/{id}', [NotebookController::class, 'update']);
+    Route::delete('notebook/{id}/{user_id}', [NotebookController::class, 'destroy']);
 
     Route::resource('blog', BlogController::class);
+    Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
 
     Route::post('changeRole', [AuthController::class, 'updateRole']);
 });

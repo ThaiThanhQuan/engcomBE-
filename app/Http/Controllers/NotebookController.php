@@ -38,74 +38,67 @@ class NotebookController extends Controller
         ]);
     
     }
-
-    public function show(Request $request){
-        $validated = $request->validate([
-            'user_id' => 'required',
-        ]);
-
-        $notebook = Notebook::where('user_id', $validated['user_id'])->get();
-
-        if ($notebook->isEmpty()) {
-            return response()->json(['message' => 'Notebook khong ton tai']);
+    public function show($user_id)
+    {
+        if (empty($user_id) || !is_numeric($user_id)) {
+            return response()->json(['message' => 'user_id không hợp lệ'], 422);
         }
-
+    
+        $notebook = Notebook::where('user_id', $user_id)->get();
+    
+        if ($notebook->isEmpty()) {
+            return response()->json(['message' => 'Notebook không tồn tại','notebook' => $notebook]);
+        }
+    
         return response()->json([
             'message' => 'success',
             'notebook' => $notebook
         ]);
     }
 
-    public function update(Request $request){
+    public function update(Request $request, $id) {
         $validated = $request->validate([
-            'id' => 'required',
             'user_id' => 'required',
             'title' => 'required|string|max:300',
             'content' => 'required|string',
         ]);
-
-        $notebook = Notebook::find($validated['id']);
-
+    
+        $notebook = Notebook::find($id);
+    
         if (!$notebook) {
-            return response()->json(['message' => 'notebook khong tim thay'], 404);
+            return response()->json(['message' => 'Notebook không tìm thấy'], 404);
         }
-
+    
         $notebook->update([
+            'user_id' => $validated['user_id'],
             'title' => $validated['title'],
             'content' => $validated['content'],
         ]);
-
-       
+    
         return response()->json([
-        'message' => 'Notebook da duoc update',
-        'notebook' => [
-            'id' => $notebook->id,
-            'user_id' => $notebook->user_id,
-            'title' => $notebook->title,
-            'content' => $notebook->content,
-        ]
-    ]);
+            'message' => 'Notebook đã được cập nhật',
+            'notebook' => $notebook,
+        ], 200);
     }
-
-    public function destroy(Request $request){
-        $validated = $request->validate([
-            'id' => 'required',
-            'user_id' => 'required',
-        ]);
-
-        $notebook = Notebook::find($validated['id']);
-
-        if (!$notebook) {
-            return response()->json(['message' => 'notebook khong tim thay'], 404);
+    
+    public function destroy($id, $user_id)
+    {
+        if (empty($user_id) || !is_numeric($user_id)) {
+            return response()->json(['message' => 'user_id không hợp lệ'], 422);
         }
 
-        $notebook->delete();
-          
-  
+        $notebook = Notebook::find($id);
 
-       
+        if (!$notebook) {
+            return response()->json(['message' => 'notebook không tìm thấy'], 404);
+        }
+
+        // Xóa notebook
+        $notebook->delete();
+
         return response()->json([
-        'message' => 'Notebook da xoa',
-    ]);
+            'message' => 'Notebook đã xóa',
+            'data' => $notebook,
+        ]);
     }
 }

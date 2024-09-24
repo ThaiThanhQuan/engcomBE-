@@ -18,26 +18,28 @@ class BlogController extends Controller
     {
         $input = $request->all();
         $validator = Validator::make($input, [
+            'user_id' => 'required|integer',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
         ]);
+    
         if ($validator->fails()) {
-            $arr = [
+            return response()->json([
                 'success' => false,
-                'message' => 'Thêm thất bại! ',
+                'message' => 'Thêm thất bại!',
                 'data' => $validator->errors(),
-            ];
-            return response()->json($arr);
+            ], 400);
         }
+    
+        // Tạo bài viết mới
         $blog = Blog::create($input);
-        $arr = [
+    
+        return response()->json([
             'status' => true,
             'message' => "Thêm thành công",
-            'data' => $blog
-        ];
-
-        return response()->json($arr, 201);
-    }
+            'data' => $blog,
+        ], 201);
+    }    
     // Đọc Blog theo ID
     public function show($id)
     {
@@ -55,6 +57,23 @@ class BlogController extends Controller
             'data' => $blog
         ];
         return response()->json($arr, 201);
+    }
+    public function showList($userId)
+    {
+        $blogs = Blog::where('user_id', $userId)->get();
+    
+        if ($blogs->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy bài viết nào',
+            ], 404);
+        }
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Danh sách bài viết',
+            'data' => $blogs,
+        ], 200);
     }
 
     // Cập nhật Blog
@@ -91,6 +110,7 @@ class BlogController extends Controller
         $arr = [
             'status' => true,
             'message' => 'Bài viết đã được xóa',
+            'data' => $blog,
         ];
         return response()->json($arr, 200);
     }
