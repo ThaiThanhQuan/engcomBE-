@@ -49,7 +49,7 @@ class BlogController extends Controller
                 'success' => false,
                 'message' => 'Không tìm thấy bài viết',
             ];
-            return response()->json($arr, 404);
+            return response()->json($arr, 201);
         }
         $arr = [
             'success' => true,

@@ -83,24 +83,20 @@ class NotebookController extends Controller
         ], 200);
     }
     
-    public function destroy($id, $user_id)
+    public function destroy($id)
     {
-        if (empty($user_id) || !is_numeric($user_id)) {
-            return response()->json(['message' => 'user_id không hợp lệ'], 422);
-
         $notebook = Notebook::find($id);
-
+    
         if (!$notebook) {
             return response()->json(['message' => 'notebook không tìm thấy'], 404);
         }
-
+    
         // Xóa notebook
         $notebook->delete();
-
+    
         return response()->json([
             'message' => 'Notebook đã xóa',
             'data' => $notebook,
         ]);
     }
-}
 }
