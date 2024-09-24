@@ -23,6 +23,9 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
+    Route::get('search', [SearchController::class, 'search']);
+
+
 
     Route::resource('notebook', NotebookController::class);
     
