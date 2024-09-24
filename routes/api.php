@@ -23,11 +23,8 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
-    Route::post('notebook/store', [NotebookController::class, 'store']);
-    Route::post('notebook/show', [NotebookController::class, 'show']);
-    Route::post('notebook/update', [NotebookController::class, 'update']);
-    Route::post('notebook/destroy', [NotebookController::class, 'destroy']);
-
+    Route::resource('notebook', NotebookController::class);
+    
     Route::resource('blog', BlogController::class);
 
     Route::post('changeRole', [AuthController::class, 'updateRole']);

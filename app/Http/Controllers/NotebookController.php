@@ -40,21 +40,26 @@ class NotebookController extends Controller
     }
 
     public function show(Request $request){
-        $validated = $request->validate([
-            'user_id' => 'required',
-        ]);
-
-        $notebook = Notebook::where('user_id', $validated['user_id'])->get();
-
-        if ($notebook->isEmpty()) {
-            return response()->json(['message' => 'Notebook khong ton tai']);
+        $userId = $request->query('user_id');
+        $notebookId = $request->query('id');
+    
+        if (!$userId || !$notebookId) {
+            return response()->json(['message' => 'thieu user_id hoac id'], 400);
         }
 
+        $notebook = Notebook::where('user_id', $userId)
+                            ->where('id', $notebookId)
+                            ->first();
+        if (!$notebook) {
+            return response()->json(['message' => 'Notebook khong ton tai'], 404);
+        }
+    
         return response()->json([
             'message' => 'success',
             'notebook' => $notebook
-        ]);
+        ], 200);
     }
+    
 
     public function update(Request $request){
         $validated = $request->validate([
@@ -64,7 +69,7 @@ class NotebookController extends Controller
             'content' => 'required|string',
         ]);
 
-        $notebook = Notebook::find($validated['id']);
+        $notebook = Notebook::where('id', $validated['id'])->where('user_id', $validated['user_id'])->first();
 
         if (!$notebook) {
             return response()->json(['message' => 'notebook khong tim thay'], 404);
@@ -93,7 +98,7 @@ class NotebookController extends Controller
             'user_id' => 'required',
         ]);
 
-        $notebook = Notebook::find($validated['id']);
+        $notebook = Notebook::where('id', $validated['id'])->where('user_id', $validated['user_id'])->first();
 
         if (!$notebook) {
             return response()->json(['message' => 'notebook khong tim thay'], 404);
