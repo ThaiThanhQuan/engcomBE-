@@ -4,15 +4,35 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Blog;
+use Illuminate\Support\Facades\DB;
 use Validator;
 class BlogController extends Controller
 {
     // Đọc tất cả Blogs
-    public function index()
-    {
-        $blogs = Blog::all();
-        return response()->json($blogs);
-    }
+  public function index()
+{
+    $blogs = DB::table('blogs')
+        ->join('users', 'blogs.user_id', '=', 'users.id')
+        ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'users.name', 'users.avatar')
+        ->get();
+
+    $formattedBlogs = $blogs->map(function ($blog) {
+        return [ 
+            'blog' => [
+                'id' => $blog->id,
+                'user_id' => $blog->user_id,
+                'title' => $blog->title,
+                'content' => $blog->content,
+            ],
+            'user' => [
+                'user' => $blog->name,
+                'img' => $blog->avatar,
+            ],
+        ];
+    });
+
+    return response()->json(['data' => $formattedBlogs,'message' => 'success', 'status' =>true]);
+}
     // Tạo Blog
     public function store(Request $request)
     {
@@ -114,4 +134,18 @@ class BlogController extends Controller
         ];
         return response()->json($arr, 200);
     }
+    public function upload(Request $request) {
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+    
+        if ($request->file('file')) {
+            $path = $request->file('file')->store('images', 'public');
+    
+            return response()->json(['link' => asset('storage/' . $path)], 200);
+        }
+    
+        return response()->json(['error' => 'File not uploaded'], 400);
+    }
+    
 }

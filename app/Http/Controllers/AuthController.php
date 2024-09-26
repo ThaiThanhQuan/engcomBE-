@@ -15,7 +15,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','logout', 'register', 'getSocialUser', 'updateRole', 'refresh']]);
+        $this->middleware('auth:api', ['except' => ['login','logout','refresh', 'register', 'getSocialUser', 'updateRole', 'refresh']]);
     }
     public function register(Request $request)
     {
@@ -43,11 +43,14 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => 'email da ton tai', 'field' => 'email',], 409);
         }
+        $refreshToken =  $this->createRefreshToken();
+
         $userdata = User::find($user->id);
         // tao token
         $token = JWTAuth::fromUser($user);
         return response()->json([
             'message' => 'register thanh cong',
+            'refresh_token' => $refreshToken,
             'user' => [
                 'id' => $userdata->id,
                 'name' => $userdata->name,
@@ -111,25 +114,38 @@ class AuthController extends Controller
     }
     public function refresh()
     {
-        $refreshToken = request()->refresh_token;
-        try{
-            $decoded = JWTAuth::getJWTProvider()->decode($refreshToken);
-            // Xử lý cấp lại token mới
-            // -> Lấy thông tin user
-            $user = User::find($decoded['user_id']);
-            if(! $user){
-                return response()->json(['error' => "User not found"],404);
+        // Lấy token từ header
+        $token = request()->header('Authorization');
+    
+        try {
+            // Bỏ "Bearer " từ token để lấy chuỗi token thực tế
+            $token = str_replace('Bearer ', '', $token);
+            $jwtToken = new \Tymon\JWTAuth\Token($token);
+            $decoded = JWTAuth::getJWTProvider()->decode($jwtToken);
+    
+            // Kiểm tra xem user_id có trong payload không
+            $user = null;
+    
+            if (isset($decoded['sub'])) {
+                $user = User::find($decoded['sub']); // Kiểm tra với id
+            } 
+    
+            if (!$user && isset($decoded['uid'])) {
+                $user = User::where('uid', $decoded['uid'])->first(); // Kiểm tra với uid
             }
-            // auth('api')->invalidate(); // Vô hiệu hóa token hiện tại
-            $token = auth('api')->login($user); //Tạo token mới
+    
+            if (!$user) {
+                return response()->json(['error' => "User not found"], 404);
+            }
+    
+            // Tạo token mới
+            $newToken = JWTAuth::fromUser($user);
             $refreshToken = $this->createRefreshToken();
-            return $this->respondWithToken($token,$refreshToken);
-            // return response()->json($user);
-        }catch(JWTException $e){
+    
+            return $this->respondWithToken($newToken, $refreshToken);
+        } catch (JWTException $e) {
             return response()->json(['error' => 'Refresh Token Invalid'], 500);
         }
-        
-        // return $this->respondWithToken(auth('api')->refresh());
     }
     private function respondWithToken($token, $refreshToken)
     {
@@ -137,19 +153,10 @@ class AuthController extends Controller
             'access_token' => $token,
             'refresh_token' => $refreshToken,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60
+            'expires_in' => auth()->factory()->getTTL() * 60
         ]);
+    }
 
-    }
-    private function createRefreshToken(){
-        $data = [
-            'user_id' => auth('api')->user()->id,
-            'random' => rand() . time(),
-            'exp' => time() + config('jwt.refresh_ttl')
-        ];
-        $refreshToken =  JWTAuth::getJWTProvider()->encode($data);
-        return $refreshToken;
-    }
     public function getSocialUser(Request $request)
     {
         // Nhận uid từ frontend gửi lên
@@ -157,16 +164,20 @@ class AuthController extends Controller
         $email = $request->input('email');
         $name = $request->input('name');
         $avatar = $request->input('avatar');
-
+        
         try {
             // Kiểm tra xem người dùng đã tồn tại trong DB chưa
             $existingUser = User::where('uid', $uid)->first();
+
+            // Create a refresh token
+            $refreshToken = $this->createRefreshToken();
 
             if ($existingUser) {
                 $token = JWTAuth::fromUser($existingUser);
                 return response()->json([
                     'message' => 'User already exists',
                     'access_token' => $token,
+                    'refresh_token' => $refreshToken, // Added refresh token
                     'status' => '1',
                     'user' => [
                         'id' => $existingUser->id,
@@ -195,6 +206,7 @@ class AuthController extends Controller
                 return response()->json([
                     'message' => 'New user created',
                     'access_token' => $token,
+                    'refresh_token' => $refreshToken, 
                     'status' => '2',
                     'user' => [
                         'id' => $newUser->id,
@@ -215,6 +227,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Error processing request: ' . $e->getMessage()], 400);
         }
     }
+
     public function updateRole(Request $request)
     {
         // Nhận uid và role_id mới từ request
@@ -250,6 +263,14 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => 'Error processing request: ' . $e->getMessage()], 400);
         }
+    }
+    private function createRefreshToken(){
+        $data = [
+            'random' => rand() . time(),
+            'exp' => time() + config('jwt.refresh_ttl')
+        ];
+        $refreshToken =  JWTAuth::getJWTProvider()->encode($data);
+        return $refreshToken;
     }
 }
 
