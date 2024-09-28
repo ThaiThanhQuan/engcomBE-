@@ -11,19 +11,11 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 class NotebookController extends Controller
 {
     public function store(Request $request){
-        
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:300',
-            'content' => 'required|string',
-            'user_id' => 'required',
-        ]);
-
-        
+          
         $notebook = Notebook::create([
-            'title' => $validated['title'],
-            'content' => $validated['content'],
-            'user_id' => $validated['user_id'],
+            'title' => $request->title,
+            'content' => $request->content,
+            'user_id' => $request->user_id,
         ]);
 
        
@@ -58,11 +50,7 @@ class NotebookController extends Controller
     
 
     public function update(Request $request, $id) {
-        $validated = $request->validate([
-            'user_id' => 'required',
-            'title' => 'required|string|max:300',
-            'content' => 'required|string',
-        ]);
+       
     
         $notebook = Notebook::find($id);
     
@@ -72,9 +60,9 @@ class NotebookController extends Controller
         }
     
         $notebook->update([
-            'user_id' => $validated['user_id'],
-            'title' => $validated['title'],
-            'content' => $validated['content'],
+            'user_id' => $request->user_id,
+            'title' => $request->title,
+            'content' => $request->content,
         ]);
     
         return response()->json([

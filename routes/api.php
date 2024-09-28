@@ -24,16 +24,21 @@ Route::group([
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
     Route::get('search', [SearchController::class, 'search']);
-
+    // Upload
+    // Class cart banner
+    Route::post('upload-cart', [UploadController::class, 'cart']);
+    Route::post('delete-cart', [UploadController::class, 'deleteCart']);
+    Route::post('upload-video', [UploadController::class, 'uploadVideo']);
+    Route::post('delete-video', [UploadController::class, 'deleteVideo']);
 
 
     Route::resource('notebook', NotebookController::class);
-    
     Route::resource('blog', BlogController::class);
-    Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
 
+    Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
     Route::post('changeRole', [AuthController::class, 'updateRole']);
 });
+
 Route::group(['prefix' => 'admin'], function () {
     Route::resource('user', UserController::class);
 });
