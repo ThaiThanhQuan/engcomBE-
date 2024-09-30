@@ -34,6 +34,10 @@ Route::group([
 
     Route::resource('notebook', NotebookController::class);
     Route::resource('blog', BlogController::class);
+    Route::resource('class', ClassController::class);
+    Route::get('own-class/{user_id}', [ClassController::class, 'ownShow']);
+    Route::resource('course', CourseController::class);
+    Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
     Route::post('changeRole', [AuthController::class, 'updateRole']);

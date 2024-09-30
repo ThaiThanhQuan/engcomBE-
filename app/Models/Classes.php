@@ -9,4 +9,6 @@ class Classes extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'user_id', 'description', 'price', 'discount', 'total', 'thumbnail', 'deleted'];
+
+    public $timestamps = true;
 }

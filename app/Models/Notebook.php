@@ -14,5 +14,5 @@ class Notebook extends Model
         'content',
         'user_id'
     ];
-
+    public $timestamps = true;
 }
