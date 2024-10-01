@@ -105,13 +105,6 @@ class CourseController extends Controller
     }
     
     
-    
-
-    
-
-    
-
-    
     /**
      * Update the specified resource in storage.
      */

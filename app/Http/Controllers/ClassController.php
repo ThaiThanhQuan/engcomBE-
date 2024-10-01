@@ -9,7 +9,37 @@ class ClassController extends Controller
 {
     public function index()
     {
-        
+        // Lấy tất cả lớp học
+        $classes = Classes::all();
+
+        // Khởi tạo mảng để lưu dữ liệu theo từng loại
+        $costClasses = [];
+        $privateClasses = [];
+        $publicClasses = [];
+
+        // Phân loại các lớp học theo type
+        foreach ($classes as $class) {
+            switch ($class->type) {
+                case 'cost':
+                    $costClasses[] = $class;
+                    break;
+                case 'private':
+                    $privateClasses[] = $class;
+                    break;
+                case 'public':
+                    $publicClasses[] = $class;
+                    break;
+            }
+        }
+
+        return response()->json([
+            'data' => [
+                'cost' => $costClasses,
+                'private' => $privateClasses,
+                'public' => $publicClasses,
+            ],
+            'message' => 'success'
+        ]);
     }
 
     public function store(Request $request)
@@ -256,7 +286,6 @@ class ClassController extends Controller
         ]);
     }
 
-
     public function destroy($classId)
     {
         // Xóa tất cả nội dung liên quan đến lớp học
@@ -302,4 +331,13 @@ class ClassController extends Controller
         ]);
     }
 
+    public function moreShow($type)
+    {
+        $classes = Classes::where('type', $type)->get();
+    
+        return response()->json([
+            'data' => $classes,
+            'message' => 'success'
+        ]);
+    }
 }
