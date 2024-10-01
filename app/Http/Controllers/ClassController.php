@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Classes;
+use App\Models\Comment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use DB;
 class ClassController extends Controller
@@ -19,15 +21,36 @@ class ClassController extends Controller
 
         // Phân loại các lớp học theo type
         foreach ($classes as $class) {
+            // Lấy thông tin người dùng từ user_id
+            $user = User::find($class->user_id);
+            $userInfo = [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ];
+
+            // Đếm số lượng comment cho lớp học
+            $commentCount = Comment::where('class_id', $class->id)->count();
+
+            // Gộp dữ liệu vào InfoData
+            $infoData = [
+                'info' => [
+                    [
+                        'user' => $userInfo,
+                        'comment_count' => $commentCount,
+                    ],
+                ],
+            ];
+
             switch ($class->type) {
                 case 'cost':
-                    $costClasses[] = $class;
+                    $costClasses[] = array_merge(['class' => $class], $infoData);
                     break;
                 case 'private':
-                    $privateClasses[] = $class;
+                    $privateClasses[] = array_merge(['class' => $class], $infoData);
                     break;
                 case 'public':
-                    $publicClasses[] = $class;
+                    $publicClasses[] = array_merge(['class' => $class], $infoData);
                     break;
             }
         }
@@ -41,7 +64,6 @@ class ClassController extends Controller
             'message' => 'success'
         ]);
     }
-
     public function store(Request $request)
     {
         $input_cart = $request->input("carts");
@@ -333,11 +355,43 @@ class ClassController extends Controller
 
     public function moreShow($type)
     {
+        // Lấy tất cả lớp học theo loại
         $classes = Classes::where('type', $type)->get();
-    
+
+        // Khởi tạo mảng để lưu dữ liệu
+        $classData = [];
+
+        // Phân loại và lấy thông tin người dùng, số lượng comment
+        foreach ($classes as $class) {
+            // Lấy thông tin người dùng từ user_id
+            $user = User::find($class->user_id);
+            $userInfo = [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ];
+
+            // Đếm số lượng comment cho lớp học
+            $commentCount = Comment::where('class_id', $class->id)->count();
+
+            // Gộp dữ liệu vào InfoData
+            $infoData = [
+                'info' => [
+                    [
+                        'user' => $userInfo,
+                        'comment_count' => $commentCount,
+                    ],
+                ],
+            ];
+
+            // Thêm vào mảng dữ liệu với cấu trúc giống như yêu cầu trước
+            $classData[] = array_merge(['class' => $class], $infoData);
+        }
+
         return response()->json([
-            'data' => $classes,
+            'data' => $classData,
             'message' => 'success'
         ]);
     }
+
 }

@@ -42,6 +42,9 @@ Route::group([
     Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
     Route::resource('lesson', LessonController::class);
 
+    Route::resource('comment', CommentController::class);
+    Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
+
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
     Route::post('changeRole', [AuthController::class, 'updateRole']);
