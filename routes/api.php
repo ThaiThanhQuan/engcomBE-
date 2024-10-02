@@ -36,14 +36,18 @@ Route::group([
     Route::resource('blog', BlogController::class);
     Route::resource('class', ClassController::class);
     Route::get('class-more/{type}', [ClassController::class, 'moreShow']);
-    
     Route::get('own-class/{user_id}', [ClassController::class, 'ownShow']);
+    Route::post('private/{class_id}', [ClassController::class, 'privateValidate']);
+    
     Route::resource('course', CourseController::class);
     Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
     Route::resource('lesson', LessonController::class);
 
     Route::resource('comment', CommentController::class);
     Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
+
+    Route::resource('subscribe', SubscribeController::class);
+
 
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);

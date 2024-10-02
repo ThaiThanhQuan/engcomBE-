@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Blog extends Model
+class Subscribe extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','title','content'];
-    
+    protected $table = 'subsribe';
+    protected $fillable = [
+        'id',
+        'class_id',
+        'user_id',
+    ];
     public $timestamps = true;
 }

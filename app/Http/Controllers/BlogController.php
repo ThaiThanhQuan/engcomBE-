@@ -9,30 +9,30 @@ use Validator;
 class BlogController extends Controller
 {
     // Đọc tất cả Blogs
-  public function index()
-{
-    $blogs = DB::table('blogs')
-        ->join('users', 'blogs.user_id', '=', 'users.id')
-        ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'users.name', 'users.avatar')
-        ->get();
+    public function index()
+    {
+        $blogs = DB::table('blogs')
+            ->join('users', 'blogs.user_id', '=', 'users.id')
+            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'users.name', 'users.avatar')
+            ->get();
 
-    $formattedBlogs = $blogs->map(function ($blog) {
-        return [ 
-            'blog' => [
-                'id' => $blog->id,
-                'user_id' => $blog->user_id,
-                'title' => $blog->title,
-                'content' => $blog->content,
-            ],
-            'user' => [
-                'user' => $blog->name,
-                'img' => $blog->avatar,
-            ],
-        ];
-    });
+        $formattedBlogs = $blogs->map(function ($blog) {
+            return [ 
+                'blog' => [
+                    'id' => $blog->id,
+                    'user_id' => $blog->user_id,
+                    'title' => $blog->title,
+                    'content' => $blog->content,
+                ],
+                'user' => [
+                    'user' => $blog->name,
+                    'img' => $blog->avatar,
+                ],
+            ];
+        });
 
-    return response()->json(['data' => $formattedBlogs,'message' => 'success', 'status' =>true]);
-}
+        return response()->json(['data' => $formattedBlogs,'message' => 'success', 'status' =>true]);
+    }
     // Tạo Blog
     public function store(Request $request)
     {

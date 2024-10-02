@@ -160,12 +160,43 @@ class ClassController extends Controller
     }
     public function ownShow(string $user_id)
     {
-        $class = Classes::where('user_id', $user_id)->get();
+        // Lấy tất cả lớp học theo user_id
+        $classes = Classes::where('user_id', $user_id)->get();
+
+        // Khởi tạo mảng để lưu dữ liệu
+        $classData = [];
+
+        // Phân loại và lấy thông tin người dùng, số lượng comment
+        foreach ($classes as $class) {
+            // Lấy thông tin người dùng từ user_id
+            $user = User::find($class->user_id);
+            $userInfo = [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ];
+
+            // Đếm số lượng comment cho lớp học
+            $commentCount = Comment::where('class_id', $class->id)->count();
+
+            // Gộp dữ liệu vào InfoData
+            $infoData = [
+                'info' => [
+                    [
+                        'user' => $userInfo,
+                        'comment_count' => $commentCount,
+                    ],
+                ],
+            ];
+
+            // Thêm vào mảng dữ liệu với cấu trúc giống như yêu cầu trước
+            $classData[] = array_merge(['class' => $class], $infoData);
+        }
 
         return response()->json([
-            'message' => 'success',
-            'data' => $class
-        ],200);
+            'data' => $classData,
+            'message' => 'success'
+        ]);
     }
 
     public function update(Request $request, $classId)
@@ -394,4 +425,28 @@ class ClassController extends Controller
         ]);
     }
 
+    public function privateValidate(Request $req, string $class_id) {
+        // Tìm lớp dựa trên class_id
+        $class = Classes::find($class_id);
+    
+        // Nếu lớp không tồn tại, trả về lỗi
+        if (!$class) {
+            return response()->json([
+                'message' => 'Class not found.',
+            ], 404); // Không tìm thấy lớp
+        }
+    
+        // So sánh mật khẩu từ yêu cầu với mật khẩu của lớp
+        if ($class->password && $req->password === $class->password) {
+            return response()->json([
+                'message' => 'Password is correct.',
+            ], 200); // Mật khẩu đúng
+        } else {
+            return response()->json([
+                'message' => 'Invalid password.',
+            ], 403); // Mật khẩu sai
+        }
+    }
+    
+    
 }
