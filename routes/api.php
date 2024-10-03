@@ -51,7 +51,11 @@ Route::group([
 
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
+
     Route::post('changeRole', [AuthController::class, 'updateRole']);
+    Route::put('/user/{id}', [AuthController::class, 'updateUser']);
+    Route::post('/avatar/{id}', [AuthController::class, 'uploadAvatar']);
+
 });
 
 Route::group(['prefix' => 'admin'], function () {

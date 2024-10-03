@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Classes;
 use App\Models\Comment;
+use App\Models\Subscribe;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DB;
@@ -31,6 +32,8 @@ class ClassController extends Controller
 
             // Đếm số lượng comment cho lớp học
             $commentCount = Comment::where('class_id', $class->id)->count();
+            // Đếm số lượng người đăng ký cho lớp học
+            $subscribeCount = Subscribe::where('class_id', $class->id)->count();
 
             // Gộp dữ liệu vào InfoData
             $infoData = [
@@ -38,6 +41,7 @@ class ClassController extends Controller
                     [
                         'user' => $userInfo,
                         'comment_count' => $commentCount,
+                        'subscribe_count' => $subscribeCount,
                     ],
                 ],
             ];
@@ -178,6 +182,8 @@ class ClassController extends Controller
 
             // Đếm số lượng comment cho lớp học
             $commentCount = Comment::where('class_id', $class->id)->count();
+            // Đếm số lượng người đăng ký cho lớp học
+            $subscribeCount = Subscribe::where('class_id', $class->id)->count();
 
             // Gộp dữ liệu vào InfoData
             $infoData = [
@@ -185,6 +191,7 @@ class ClassController extends Controller
                     [
                         'user' => $userInfo,
                         'comment_count' => $commentCount,
+                        'subscribe_count' => $subscribeCount,
                     ],
                 ],
             ];
@@ -438,8 +445,10 @@ class ClassController extends Controller
     
         // So sánh mật khẩu từ yêu cầu với mật khẩu của lớp
         if ($class->password && $req->password === $class->password) {
+            // Nếu mật khẩu đúng, trả về dữ liệu lớp
             return response()->json([
                 'message' => 'Password is correct.',
+                'data' => $class, // Trả về thông tin lớp
             ], 200); // Mật khẩu đúng
         } else {
             return response()->json([
@@ -447,6 +456,5 @@ class ClassController extends Controller
             ], 403); // Mật khẩu sai
         }
     }
-    
     
 }

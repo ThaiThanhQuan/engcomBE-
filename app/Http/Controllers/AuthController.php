@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -54,7 +55,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $userdata->id,
                 'name' => $userdata->name,
-                'phonenumber' => $userdata->phonenumber,
+                'phone_number' => $userdata->phone_number,
                 'email' => $userdata->email,
                 'address' => $userdata->address,
                 'sex' => $userdata->sex,
@@ -86,7 +87,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'phonenumber' => $user->phonenumber,
+                'phone_number' => $user->phone_number,
                 'email' => $user->email,
                 'address' => $user->address,
                 'sex' => $user->sex,
@@ -182,7 +183,7 @@ class AuthController extends Controller
                     'user' => [
                         'id' => $existingUser->id,
                         'name' => $existingUser->name,
-                        'phonenumber' => $existingUser->phonenumber,
+                        'phone_number' => $existingUser->phone_number,
                         'email' => $existingUser->email,
                         'address' => $existingUser->address,
                         'sex' => $existingUser->sex,
@@ -211,7 +212,7 @@ class AuthController extends Controller
                     'user' => [
                         'id' => $newUser->id,
                         'name' => $newUser->name,
-                        'phonenumber' => $newUser->phonenumber,
+                        'phone_number' => $newUser->phone_number,
                         'email' => $newUser->email,
                         'address' => $newUser->address,
                         'sex' => $newUser->sex,
@@ -272,5 +273,100 @@ class AuthController extends Controller
         $refreshToken =  JWTAuth::getJWTProvider()->encode($data);
         return $refreshToken;
     }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::find($id);
+    
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+    
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
+        if ($request->has('phone_number')) {
+            $user->phone_number = $request->phone_number;
+        }
+        if ($request->has('gender')) {
+            $user->sex = $request->gender; 
+        }
+        if ($request->has('address')) {  // Thêm điều kiện kiểm tra cho trường address
+            $user->address = $request->address;
+        }
+    
+        $user->save();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,                    // ID người dùng
+                'name' => $user->name,                // Tên đầy đủ
+                'phone_number' => $user->phone_number, // Số điện thoại
+                'email' => $user->email,              // Địa chỉ email
+                'address' => $user->address,          // Địa chỉ
+                'sex' => $user->sex,                  // Giới tính
+                'role_id' => $user->role_id,          // ID vai trò
+                'uid' => $user->uid,                  // ID người dùng
+                'token' => $user->token,              // Token xác thực
+                'avatar' => $user->avatar,            // Đường dẫn đến hình đại diện
+            ],
+        ], 200);
+    }
+    
+    
+    public function uploadAvatar(Request $request, $id) {
+        // Validate the request
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,png,jpeg,gif|max:2048',
+        ]);
+    
+        // Find the user by ID
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
+        }
+    
+        // Check if the request has a file
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+    
+            // Tạo tên file duy nhất
+            $fileName = time() . '_' . $file->getClientOriginalName();
+    
+            // Lưu file vào storage
+            $file->storeAs('uploads', $fileName, 'public');
+    
+            // Cập nhật tên avatar cho người dùng
+            $user->avatar = $fileName; // Chỉ lưu tên file
+            $user->save();
+    
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,                    // ID người dùng
+                    'name' => $user->name,                // Tên đầy đủ
+                    'phone_number' => $user->phone_number, // Số điện thoại
+                    'email' => $user->email,              // Địa chỉ email
+                    'address' => $user->address,          // Địa chỉ
+                    'sex' => $user->sex,                  // Giới tính
+                    'role_id' => $user->role_id,          // ID vai trò
+                    'uid' => $user->uid,                  // ID người dùng
+                    'token' => $user->token,              // Token xác thực
+                    'avatar' => $user->avatar,            // Tên file avatar
+                ],
+            ]);
+        }
+    
+        return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
+    }
+    
+    
+
 }
 

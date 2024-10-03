@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subscribe;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SubscribeController extends Controller
 {
@@ -27,13 +28,19 @@ class SubscribeController extends Controller
     }
     public function show(string $id)
     {
-        $userSubscribes = Subscribe::where('user_id', $id)->get();
-    
+        $userSubscribes = DB::table('subscribe')
+            ->join('classes', 'subscribe.class_id', '=', 'classes.id')
+            ->select('subscribe.*', 'classes.*') // Lấy tất cả thông tin từ cả hai bảng
+            ->where('subscribe.user_id', $id)
+            ->get();
+
         return response()->json([
-            'message' => 'Subscribes for user retrieved successfully.',
+            'message' => 'subscribe for user retrieved successfully.',
             'data' => $userSubscribes,
         ]);
     }
+
+    
     
 
     public function update(Request $request, Subscribe $subscribe)

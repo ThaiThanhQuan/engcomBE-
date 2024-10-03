@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Subscribe extends Model
 {
     use HasFactory;
-    protected $table = 'subsribe';
+    protected $table = 'subscribe';
     protected $fillable = [
         'id',
         'class_id',
