@@ -39,9 +39,13 @@ Route::group([
     Route::get('own-class/{user_id}', [ClassController::class, 'ownShow']);
     Route::post('private/{class_id}', [ClassController::class, 'privateValidate']);
     
+    // Teacher create
     Route::resource('course', CourseController::class);
     Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
     Route::resource('lesson', LessonController::class);
+
+    // Student 
+    Route::get('student/course', [StudentCourseController::class,'index']);
 
     Route::resource('comment', CommentController::class);
     Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
