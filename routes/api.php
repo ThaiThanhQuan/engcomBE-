@@ -46,6 +46,8 @@ Route::group([
 
     // Student 
     Route::get('student/course', [StudentCourseController::class,'index']);
+    // Progress
+    Route::put('/progress/{user_id}', [ProgressController::class, 'store']);
 
     Route::resource('comment', CommentController::class);
     Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
