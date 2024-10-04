@@ -30,7 +30,7 @@ class SubscribeController extends Controller
     {
         $userSubscribes = DB::table('subscribe')
             ->join('classes', 'subscribe.class_id', '=', 'classes.id')
-            ->select('subscribe.*', 'classes.*') // Lấy tất cả thông tin từ cả hai bảng
+            ->select('subscribe.*', 'classes.*','subscribe.user_id','subscribe.id')
             ->where('subscribe.user_id', $id)
             ->get();
 
@@ -52,9 +52,10 @@ class SubscribeController extends Controller
             'data' => $subscribe,
         ]);
     }
+
     public function destroy(Subscribe $subscribe)
     {
-        $subscribeData = $subscribe; // Lưu thông tin để trả về
+        $subscribeData = $subscribe; 
         $subscribe->delete();
         return response()->json([
             'message' => 'Subscribe deleted successfully.',
