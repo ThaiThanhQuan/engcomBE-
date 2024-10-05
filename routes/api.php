@@ -36,7 +36,7 @@ Route::group([
     Route::resource('blog', BlogController::class);
     Route::resource('class', ClassController::class);
     Route::get('class-more/{type}', [ClassController::class, 'moreShow']);
-    Route::get('own-class/{user_id}', [ClassController::class, 'ownShow']);
+    Route::get('own-teacher/{user_id}', [ClassController::class, 'ownShow']);
     Route::post('private/{class_id}', [ClassController::class, 'privateValidate']);
     
     // Teacher create
@@ -66,10 +66,8 @@ Route::group([
     Route::put('/user/{id}', [AuthController::class, 'updateUser']);
     Route::post('/avatar/{id}', [AuthController::class, 'uploadAvatar']);
 
+    Route::resource('customer', UserController::class);
 });
 
-Route::group(['prefix' => 'admin'], function () {
-    Route::resource('user', UserController::class);
-});
 
    

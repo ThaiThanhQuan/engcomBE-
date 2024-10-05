@@ -44,21 +44,21 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        $user = User::where('role_id', 1)->find($id);
+        $user = User::find($id);
+        
         if (!$user) {
-            $arr = [
+            return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy user',
-            ];
-            return response()->json($arr, 404);
+            ], 404);
         }
-        $arr = [
+        
+        return response()->json([
             'success' => true,
-            'message' => 'Chi tiết user',
             'data' => $user
-        ];
-        return response()->json($arr, 201);
+        ], 200); // Sử dụng 200 thay vì 201
     }
+
 
     public function update(Request $request, string $id)
     {

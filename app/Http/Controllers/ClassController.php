@@ -166,7 +166,6 @@ class ClassController extends Controller
     {
         // Lấy tất cả lớp học theo user_id
         $classes = Classes::where('user_id', $user_id)->get();
-
         // Khởi tạo mảng để lưu dữ liệu
         $classData = [];
 
