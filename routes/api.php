@@ -49,6 +49,10 @@ Route::group([
     // Progress
     Route::put('/progress/{user_id}', [ProgressController::class, 'store']);
 
+    // My class
+    Route::get('own-class/{user_id}', [OwnClassController::class, 'show']);
+
+
     Route::resource('comment', CommentController::class);
     Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
 

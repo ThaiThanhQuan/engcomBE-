@@ -14,7 +14,8 @@ class Progress extends Model
         'user_id',
         'course_id',
         'lesson_id',
-        'is_completed'
+        'is_completed',
+        'is_in_progress'
     ];
     public $timestamps = false;
     
