@@ -17,7 +17,7 @@ class ProgressController extends Controller
 
         foreach ($progressArray as $progressData) {
             $course_id = $progressData['course_id'];
-            $lesson_id = $progressData['lesson_id'];
+            $lesson_id = $progressData['id'];
             $is_completed = $progressData['is_completed'];
             $is_in_progress = $progressData['is_in_progress'];
             // Kiểm tra nếu is_in_progress là null
