@@ -24,7 +24,6 @@ Route::group([
     Route::post('social', [AuthController::class, 'getSocialUser']);
 
     Route::get('search', [SearchController::class, 'search']);
-    // Upload
     // Class cart banner
     Route::post('upload-cart', [UploadController::class, 'cart']);
     Route::post('delete-cart', [UploadController::class, 'deleteCart']);
@@ -37,6 +36,7 @@ Route::group([
     Route::resource('class', ClassController::class);
     Route::get('class-more/{type}', [ClassController::class, 'moreShow']);
     Route::get('own-teacher/{user_id}', [ClassController::class, 'ownShow']);
+    Route::get('own-teacher/user/{class_id}', [ClassController::class, 'ownStudent']);
     Route::post('private/{class_id}', [ClassController::class, 'privateValidate']);
     
     // Teacher create

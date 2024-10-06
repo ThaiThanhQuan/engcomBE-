@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Classes;
 use App\Models\Comment;
+use App\Models\Progress;
 use App\Models\Subscribe;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -155,11 +156,35 @@ class ClassController extends Controller
     {
         // Tìm đối tượng theo ID
         $class = Classes::findOrFail($id);
-    
+
+        // Lấy thông tin người dùng từ user_id
+        $user = User::find($class->user_id);
+        $userInfo = [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'avatar' => $user->avatar,
+        ];
+
+        // Đếm số lượng comment cho lớp học
+        $commentCount = Comment::where('class_id', $class->id)->count();
+        // Đếm số lượng người đăng ký cho lớp học
+        $subscribeCount = Subscribe::where('class_id', $class->id)->count();
+
+        // Gộp dữ liệu vào infoData
+        $infoData = [
+            'info' => [
+                [
+                    'user' => $userInfo,
+                    'comment_count' => $commentCount,
+                    'subscribe_count' => $subscribeCount,
+                ],
+            ],
+        ];
+
         // Trả về đối tượng dưới dạng JSON
         return response()->json([
             'message' => 'success',
-            'data' => $class // Trả về đối tượng
+            'data' => array_merge(['class' => $class], $infoData) // Trả về đối tượng lớp học và thông tin người dùng
         ], 200);
     }
     public function ownShow(string $user_id)
@@ -204,7 +229,42 @@ class ClassController extends Controller
             'message' => 'success'
         ]);
     }
-
+    public function ownStudent(string $class_id) {
+        // Lấy lớp học theo class_id
+        $class = Classes::findOrFail($class_id);
+        $course_id = $class->course_id; // Lấy course_id từ lớp học
+    
+        // Lấy tất cả sinh viên đã đăng ký vào lớp học theo class_id
+        $subscribers = Subscribe::where('class_id', $class_id)->get();
+        $studentsData = [];
+    
+        // Lặp qua từng subscriber để lấy thông tin người dùng và số bài học đã học
+        foreach ($subscribers as $subscriber) {
+            $user = User::find($subscriber->user_id);
+    
+            if ($user) { // Kiểm tra xem người dùng có tồn tại không
+                // Đếm số bài học đã hoàn thành
+                $completedLessonsCount = Progress::where('user_id', $user->id)
+                                                  ->where('course_id', $course_id)
+                                                  ->count();
+    
+                $studentsData[] = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                    'email' => $user->email,
+                    'progress' => $completedLessonsCount, 
+                ];
+            }
+        }
+    
+        return response()->json([
+            'message' => 'success',
+            'data' => $studentsData,
+        ], 200);
+    }
+    
+    
     public function update(Request $request, $classId)
     {
         $input_cart = $request->input("carts");
