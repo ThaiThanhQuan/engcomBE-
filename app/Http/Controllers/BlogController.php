@@ -13,7 +13,7 @@ class BlogController extends Controller
     {
         $blogs = DB::table('blogs')
             ->join('users', 'blogs.user_id', '=', 'users.id')
-            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'users.name', 'users.avatar')
+            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content','blogs.thumbnail', 'users.name', 'users.avatar')
             ->get();
 
         $formattedBlogs = $blogs->map(function ($blog) {
@@ -22,6 +22,7 @@ class BlogController extends Controller
                     'id' => $blog->id,
                     'user_id' => $blog->user_id,
                     'title' => $blog->title,
+                    'thumbnail' => $blog->thumbnail,
                     'content' => $blog->content,
                 ],
                 'user' => [
@@ -103,6 +104,7 @@ class BlogController extends Controller
         $validator = Validator::make($input, [
             'title' => 'sometimes|required|string|max:255',
             'content' => 'sometimes|required|string',
+            'thumnail' => 'sometimes|required|string',
         ]);
         if ($validator->fails()) {
             $arr = [
@@ -114,6 +116,7 @@ class BlogController extends Controller
         }
         $blog->title = $input['title'];
         $blog->content = $input['content'];
+        $blog->thumbnail = $input['thumbnail'];
         $blog->save();
         $arr = [
             'status' => true,

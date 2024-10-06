@@ -51,7 +51,10 @@ Route::group([
 
     // My class
     Route::get('own-class/{user_id}', [OwnClassController::class, 'show']);
-
+    // save blog
+    Route::get('save-blogs/{user_id}', [SaveBlogController::class,'show']);
+    Route::put('save-blogs/{user_id}/{blog_id}', [SaveBlogController::class,'store']);
+    Route::delete('save-blogs/{user_id}/{blog_id}', [SaveBlogController::class,'destroy']);
 
     Route::resource('comment', CommentController::class);
     Route::get('comment-res/{class_id}', [CommentController::class, 'showResponse']);
