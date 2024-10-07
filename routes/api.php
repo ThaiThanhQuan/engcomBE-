@@ -61,6 +61,8 @@ Route::group([
 
     Route::resource('subscribe', SubscribeController::class);
 
+    // Ask
+    Route::resource('ask', AskController::class);
 
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);
