@@ -69,10 +69,6 @@ class AskController extends Controller
             'data' => $asksWithUserInfo,
         ]);
     }
-    
-    
-
-
     public function update(Request $request, string $id)
     {
         //
@@ -110,6 +106,34 @@ class AskController extends Controller
         ], 200);
     }
     
+    public function reply(string $lesson_id)
+    {
+        $asks = Ask::where('lesson_id', $lesson_id)
+            ->whereNotNull('parent_id')
+            ->get();
     
+        if ($asks->isEmpty()) {
+            return response()->json(['message' => 'No asks found for this lesson'], 404);
+        }
+    
+        // Lấy thông tin người dùng từ các ask
+        $asksWithUserInfo = $asks->map(function ($ask) {
+            // Lấy thông tin người dùng dựa trên user_id trong ask
+            $user = User::find($ask->user_id);
+    
+            return [
+                'ask' => $ask,
+                'user' => $user ? [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                ] : null,
+            ];
+        });
+    
+        return response()->json([
+            'data' => $asksWithUserInfo,
+        ]);
+    }
 
 }

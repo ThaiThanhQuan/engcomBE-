@@ -63,6 +63,7 @@ Route::group([
 
     // Ask
     Route::resource('ask', AskController::class);
+    Route::get('ask/reply/{lesson_id}', [AskController::class,'reply']);
 
 
     Route::get('blogs-list/{user_id}', [BlogController::class, 'showList']);

@@ -11,7 +11,7 @@ class Ask extends Model
     
     protected $table = 'ask';
 
-    protected $fillable = ['class_id', 'user_id', 'lesson_id', 'content'];
+    protected $fillable = ['class_id', 'user_id', 'lesson_id', 'content','parent_id'];
 
     public $timestamps = true;
 }

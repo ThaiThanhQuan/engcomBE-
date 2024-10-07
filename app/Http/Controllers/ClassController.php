@@ -80,12 +80,9 @@ class ClassController extends Controller
             'user_id' => $input_cart['user_id'],
             'thumbnail' => $input_cart['thumbnail'],
             'description' => $input_cart['description'],
-            'discount' => $input_cart['discount'],
-            'price' => $input_cart['price'],
             'password' => $input_cart['password'],
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
-            'total' => $input_cart['total'],
         ]);
         foreach ($input_courses as $course) {
             $course_id = $course['id'];
@@ -277,12 +274,9 @@ class ClassController extends Controller
             'user_id' => $input_cart['user_id'],
             'thumbnail' => $input_cart['thumbnail'],
             'description' => $input_cart['description'],
-            'discount' => $input_cart['discount'],
-            'price' => $input_cart['price'],
             'password' => $input_cart['password'],
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
-            'total' => $input_cart['total'],
         ]);
 
         // Cập nhật hoặc thêm mới courses
