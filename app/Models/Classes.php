@@ -12,6 +12,15 @@ class Classes extends Model
     protected $table = 'classes';
 
     protected $fillable = ['name', 'user_id', 'description', 'thumbnail', 'deleted','password','type','subject'];
-
+    
     public $timestamps = true;
+    public function subscribes()
+    {
+        return $this->hasMany(Subscribe::class, 'class_id');
+        // Giả sử một lớp có nhiều lượt đăng ký
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id'); // 'user_id' là khóa ngoại trong bảng classes
+    }
 }

@@ -39,6 +39,8 @@ Route::group([
     Route::get('own-teacher/user/{class_id}', [ClassController::class, 'ownStudent']);
     Route::post('private/{class_id}', [ClassController::class, 'privateValidate']);
     
+    Route::get('filterData',[ClassController::class,'filterData']);
+    Route::get('topRate', [ClassController::class,'topRate']);
     // Teacher create
     Route::resource('course', CourseController::class);
     Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
