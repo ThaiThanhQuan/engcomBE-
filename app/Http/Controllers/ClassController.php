@@ -48,9 +48,6 @@ class ClassController extends Controller
             ];
 
             switch ($class->type) {
-                case 'cost':
-                    $costClasses[] = array_merge(['class' => $class], $infoData);
-                    break;
                 case 'private':
                     $privateClasses[] = array_merge(['class' => $class], $infoData);
                     break;
@@ -83,6 +80,7 @@ class ClassController extends Controller
             'password' => $input_cart['password'],
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
+            'subject' => $input_cart['subject'],
         ]);
         foreach ($input_courses as $course) {
             $course_id = $course['id'];
@@ -277,6 +275,7 @@ class ClassController extends Controller
             'password' => $input_cart['password'],
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
+            'subject' => $input_cart['subject'],
         ]);
 
         // Cập nhật hoặc thêm mới courses

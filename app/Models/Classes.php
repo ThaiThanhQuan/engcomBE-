@@ -11,7 +11,7 @@ class Classes extends Model
     
     protected $table = 'classes';
 
-    protected $fillable = ['name', 'user_id', 'description', 'price', 'discount', 'total', 'thumbnail', 'deleted'];
+    protected $fillable = ['name', 'user_id', 'description', 'thumbnail', 'deleted','password','type','subject'];
 
     public $timestamps = true;
 }
