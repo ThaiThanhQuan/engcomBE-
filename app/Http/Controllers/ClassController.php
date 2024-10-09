@@ -569,14 +569,16 @@ class ClassController extends Controller
                     'type' => $class->type,
                     'subject' => $class->subject
                 ],
-                'info' => [
-                    'user' => [
-                        'user_id' => $class->user->id,
-                        'name' => $class->user->name,
-                        'avatar' => $class->user->avatar,
-                    ],
-                    'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
-                    'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
+                'info' =>[
+                    [
+                        'user' => [
+                            'user_id' => $class->user->id,
+                            'name' => $class->user->name,
+                            'avatar' => $class->user->avatar,
+                        ],
+                        'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
+                        'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
+                    ]
                 ]
             ];
         }
@@ -609,17 +611,22 @@ class ClassController extends Controller
                         'updated_at' => $class->updated_at,
                         'password' => $class->password,
                         'type' => $class->type,
+                        'subject' => $class->subject
                     ],
                     'info' => [
-                        'user' => [
-                            'user_id' => $class->user->id,
-                            'name' => $class->user->name,
-                            'avatar' => $class->user->avatar,
+                        [
+                            'user' => [
+                                'user_id' => $class->user->id,
+                                'name' => $class->user->name,
+                                'avatar' => $class->user->avatar,
+                            ],
+                            'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
+                            'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
                         ],
-                        'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
-                        'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
+                        // Bạn có thể thêm nhiều thông tin khác ở đây
                     ]
                 ];
+                
             }
             return $result;
         };
