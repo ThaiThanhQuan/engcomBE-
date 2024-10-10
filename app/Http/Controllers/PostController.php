@@ -81,33 +81,51 @@ class PostController extends Controller
             'comments' => $comments
         ]);
     }
-    public function getAll($userId){
+    public function getAll($userId)
+    {
         // Lấy tất cả bài đăng mà user_id không phải là $userId
-    $posts = Post::where('user_id', '!=', $userId)->get();
+        $posts = Post::where('user_id', '!=', $userId)->get();
 
-    // Kiểm tra xem có bài đăng nào không
-    if ($posts->isEmpty()) {
+        // Kiểm tra xem có bài đăng nào không
+        if ($posts->isEmpty()) {
+            return response()->json([
+                'message' => 'No posts found'
+            ], 404);
+        }
+
+        // Khởi tạo mảng để lưu các bài đăng
+        $postsData = $posts->map(function ($post) {
+            // Đếm số lượng likes và comments
+            $likeCount = Like_post::where('post_id', $post->id)->count();
+            $commentCount = Comment_post::where('post_id', $post->id)->count();
+
+            // Lấy tất cả thumbnails từ bảng gallery_post
+            $galleryThumbnails = Gallery_post::where('post_id', $post->id)
+                ->pluck('thumbnail')
+                ->toArray();
+
+            // Lấy thông tin người dùng
+            $user = $post->user;
+
+            return [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_avatar' => $user->avatar,
+                'post_id' => $post->id,
+                'content' => $post->content,
+                'thumbnail' => $post->thumbnail,
+                'thumbnails' => $galleryThumbnails,
+                'like_count' => $likeCount,
+                'comment_count' => $commentCount,
+            ];
+        });
+
+        // Trả về danh sách bài đăng
         return response()->json([
-            'message' => 'No posts found'
-        ], 404);
+            'data' => $postsData
+        ], 200);
     }
 
-    // Chọn các trường cần thiết và loại bỏ user_id
-    $postsWithoutUserId = $posts->map(function ($post) {
-        return [
-            'id' => $post->id,
-            'content' => $post->content,
-            'thumbnail' => $post->thumbnail,
-            'created_at' => $post->created_at,
-            'updated_at' => $post->updated_at,
-        ];
-    });
-
-    // Trả về danh sách bài đăng
-    return response()->json([
-        'data' => $postsWithoutUserId
-    ], 200);
-    }
     public function update(Request $request, string $id)
     {
         //
