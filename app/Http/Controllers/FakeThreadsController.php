@@ -96,7 +96,7 @@ class FakeThreadsController extends Controller
         });
         return response()->json([
             'data' => $formattedPosts,
-            'message' => 'thanh cong mien man~'
+            'message' => 'thanh cong '
         ]);
     }
 
@@ -141,7 +141,7 @@ class FakeThreadsController extends Controller
 
         return response()->json([
             'data' => $post,
-            'message' => 'xoa thanh cong r babie',
+            'message' => 'xoa thanh cong ',
         ], 200);
     }
 }

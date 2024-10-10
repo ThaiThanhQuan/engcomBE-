@@ -51,7 +51,7 @@ class CommentPostController extends Controller
 
     
         return response()->json([
-            'message' => 'xoa thanh cong r babie',
+            'message' => 'xoa thanh cong ',
         ], 200); 
     }
 }
