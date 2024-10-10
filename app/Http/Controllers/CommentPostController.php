@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment_post;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class CommentPostController extends Controller
@@ -16,18 +17,28 @@ class CommentPostController extends Controller
 
 
     public function store(Request $request)
-    {
-        $commentpost = new Comment_post();
-        $commentpost->user_id = $request->input('user_id');
-        $commentpost->post_id = $request->input('post_id');
-        $commentpost->content = $request->input('content');
-        $commentpost->save();
+{
+    // Tạo một bình luận mới
+    $commentpost = new Comment_post();
+    $commentpost->user_id = $request->input('user_id');
+    $commentpost->post_id = $request->input('post_id');
+    $commentpost->content = $request->input('content');
+    $commentpost->save();
 
-        return response()->json([
-            'data' => $commentpost,
-            'message' => 'thanh cong'
-        ], 201);
-    }
+    // Lấy thông tin người dùng để trả về
+    $user = User::find($commentpost->user_id);
+
+    return response()->json([
+        'commenter_user_id' => $user->id,
+        'commenter_name' => $user->name,
+        'commenter_avatar' => $user->avatar, 
+        'comment_id' => $commentpost->id,
+        'comment_content' => $commentpost->content,
+        'comment_created_at' => $commentpost->created_at,
+        'message' => 'thành công'
+    ], 201);
+}
+
 
     public function show(string $postId)
     {
@@ -37,6 +48,7 @@ class CommentPostController extends Controller
                 'users.id as commenter_user_id',
                 'users.name as commenter_name',
                 'users.avatar as commenter_avatar',
+                'comment_post.id as comment_id',
                 'comment_post.content as comment_content',
                 'comment_post.created_at as comment_created_at'
             )
@@ -64,6 +76,7 @@ class CommentPostController extends Controller
 
         return response()->json([
             'message' => 'xoa thanh cong ',
+            'data' => $commentpost,
         ], 200);
     }
 }

@@ -23,8 +23,6 @@ class FakeThreadsController extends Controller
         $request->validate([
             'user_id' => 'required',
             'content' => 'required|string|max:255',
-            'thumbnails' => 'required|array',
-            'thumbnails.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Create a new post

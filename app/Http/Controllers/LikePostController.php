@@ -9,7 +9,12 @@ class LikePostController extends Controller
 {
     public function index()
     {
-        //
+        $like_posts = Like_post::all();
+
+        return response()->json([
+            'data' => $like_posts,
+            'message' => 'success'
+        ], 200);
     }
 
     
@@ -23,7 +28,7 @@ class LikePostController extends Controller
 
         return response()->json([
             'data' => $likepost,
-            'message' => 'thanh cong mien man~'
+            'message' => 'success'
         ], 201);
     }
 
