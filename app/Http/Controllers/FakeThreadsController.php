@@ -42,8 +42,8 @@ class FakeThreadsController extends Controller
                 // Tạo tên file duy nhất cho mỗi ảnh
                 $fileName = time() . '_' . $file->getClientOriginalName();
 
-                // Lưu ảnh vào thư mục 'uploads'
-                $file->move(public_path('uploads'), $fileName);
+                // Lưu ảnh vào thư mục 'uploads' trong storage
+                $path = $file->storeAs('uploads', $fileName, 'public');
 
                 // Lưu thông tin vào bảng gallery_post
                 $gallery = new Gallery_post();
@@ -113,23 +113,30 @@ class FakeThreadsController extends Controller
         $post->comment_post()->delete();
         $post->like_post()->delete();
         // Xóa thumbnail nếu có
+        // Xóa thumbnail nếu có
+        // Xóa thumbnail nếu có
         if ($post->thumbnail) {
-            $thumbnailPath = public_path('uploads/' . $post->thumbnail);
+            $thumbnailPath = storage_path('app/public/uploads/' . $post->thumbnail); // Đường dẫn đến thumbnail
             if (file_exists($thumbnailPath)) {
                 unlink($thumbnailPath); // Xóa file thumbnail
             }
         }
+
         // Xóa tất cả ảnh trong gallery_post
         $galleryImages = Gallery_post::where('post_id', $post->id)->get();
         foreach ($galleryImages as $galleryImage) {
-            $imagePath = public_path('uploads/' . $galleryImage->thumbnail);
+            $imagePath = storage_path('app/public/uploads/' . $galleryImage->thumbnail); // Đường dẫn đến ảnh trong gallery
             if (file_exists($imagePath)) {
                 unlink($imagePath); // Xóa file ảnh trong gallery
             }
             // Xóa record trong gallery_post
             $galleryImage->delete();
         }
+
+        // Cuối cùng, xóa bài viết
         $post->delete();
+
+
 
 
         return response()->json([
