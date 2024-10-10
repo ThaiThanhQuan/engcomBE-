@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ExerciseOptions extends Model
+class Like_post extends Model
 {
     use HasFactory;
-    protected $table = 'exercise_options';
-    protected $fillable = ['id', 'lesson_exercise_id', 'text','is_correct'];
+
+    protected $table ='like_post';
+
+    protected $fillable = ['post_id', 'user_id', 'parent_id'];
 
     public $timestamps = false;
+    
 }

@@ -7,6 +7,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotebookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FakeThreadsController;
+use App\Http\Controllers\LikePostController;
+use App\Http\Controllers\CommentPostController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -22,6 +25,10 @@ Route::group([
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('social', [AuthController::class, 'getSocialUser']);
+
+    Route::resource('fakeThreads',FakeThreadsController::class);
+    Route::resource('likepost',LikePostController::class);
+    Route::resource('commentpost',CommentPostController::class);
 
     Route::get('search', [SearchController::class, 'search']);
     // Class cart banner
