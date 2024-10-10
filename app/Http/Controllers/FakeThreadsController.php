@@ -19,76 +19,85 @@ class FakeThreadsController extends Controller
     }
     public function store(Request $request)
     {
-        // Xác thực dữ liệu đầu vào
+        // Validate incoming request data
         $request->validate([
-            'user_id' => 'required', // Bắt buộc phải có user_id
-            'content' => 'required|string|max:255', // Nội dung bài viết bắt buộc, tối đa 255 ký tự
-            'thumbnails' => 'required|array', // Thumbnails là bắt buộc và có thể là mảng
-            'thumbnails.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Mỗi phần tử trong thumbnails phải là ảnh, tối đa 2MB
+            'user_id' => 'required',
+            'content' => 'required|string|max:255',
+            'thumbnails' => 'required|array',
+            'thumbnails.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Tạo một đối tượng Post mới
+        // Create a new post
         $post = new Post();
         $post->user_id = $request->input('user_id');
         $post->content = $request->input('content');
-        $post->save(); // Lưu bài viết trước khi thêm hình ảnh vào gallery_post
+        $post->save();
 
-        // Khởi tạo mảng để lưu tên các ảnh
+        // Array to hold image paths
         $imagePaths = [];
 
-        // Xử lý nếu có nhiều ảnh được tải lên
+        // Process uploaded images
         if ($request->hasFile('thumbnails')) {
             foreach ($request->file('thumbnails') as $file) {
-                // Tạo tên file duy nhất cho mỗi ảnh
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                // Create a unique name for each image
+                $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
 
-                // Lưu ảnh vào thư mục 'uploads' trong storage
+                // Store the image in the 'uploads' directory
                 $path = $file->storeAs('uploads', $fileName, 'public');
 
-                // Lưu thông tin vào bảng gallery_post
+                // Save image information to the gallery_post table
                 $gallery = new Gallery_post();
-                $gallery->post_id = $post->id; // Liên kết ảnh với bài viết
-                $gallery->thumbnail = $fileName; // Lưu tên file
+                $gallery->post_id = $post->id;
+                $gallery->thumbnail = $fileName;
                 $gallery->save();
 
-                // Thêm tên ảnh vào mảng
+                // Add the image name to the array
                 $imagePaths[] = $fileName;
             }
         }
 
-        // Lưu tên ảnh vào bảng posts (nếu bạn muốn)
-        $post->thumbnail = json_encode($imagePaths); // Nếu bạn muốn lưu tên ảnh vào bảng posts
-        $post->save(); // Lưu lại bài viết nếu đã thêm trường images
+        // Optionally save image names to the posts table
+        $post->thumbnail = json_encode($imagePaths);
+        $post->save();
 
-        // Trả về phản hồi JSON
+        // Return a JSON response
         return response()->json([
-            'data' => $post,
-            'message' => 'Thêm bài viết và hình ảnh thành công'
+            'data' => [
+                'user_id' => $post->user_id,
+                'content' => $post->content,
+                'created_at' => $post->created_at,
+                'id' => $post->id,
+                'thumbnails' => $imagePaths, // Chuyển đổi thumbnail thành mảng
+        ],
+        'message' => 'Thêm bài viết và hình ảnh thành công'
         ], 201);
     }
-
 
     public function show(string $id)
     {
 
         $post = Post::join('users', 'post.user_id', '=', 'users.id')
             ->where('post.user_id', $id)
-            ->select('post.id', 'post.content', 'post.thumbnail', 'post.created_at', 'users.name as user_name', 'users.avatar as user_avatar')
+            ->select('post.id', 'post.content', 'post.thumbnail', 'post.created_at', 'post.user_id', 'users.name as user_name', 'users.avatar as user_avatar')
             ->get();
 
-
+            
         // Chuyển đổi dữ liệu để tách user thông tin
         $formattedPosts = $post->map(function ($post) {
             $likepostCount = Like_post::where('post_id', $post->id)->count();
             $commentpostCount = Comment_post::where('post_id', $post->id)->count();
+            $galleryThumbnails = Gallery_post::where('post_id', $post->id)
+            ->pluck('thumbnail')
+            ->toArray(); // Chuyển đổi thành mảng
             return [
                 'id' => $post->id,
                 'content' => $post->content,
-                'thumbnail' => $post->thumbnail,
+                'thumbnails' => $galleryThumbnails,
                 'created_at' => $post->created_at,
                 'likecount' => $likepostCount,
                 'commentcount' => $commentpostCount,
                 'user' => [
+                    'user_id' => $post->user_id,
                     'name' => $post->user_name,
                     'avatar' => $post->user_avatar,
                 ],
@@ -135,10 +144,6 @@ class FakeThreadsController extends Controller
 
         // Cuối cùng, xóa bài viết
         $post->delete();
-
-
-
-
         return response()->json([
             'data' => $post,
             'message' => 'xoa thanh cong ',

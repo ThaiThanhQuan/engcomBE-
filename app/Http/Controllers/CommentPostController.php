@@ -25,7 +25,7 @@ class CommentPostController extends Controller
 
         return response()->json([
             'data' => $commentpost,
-            'message' => 'thanh cong mien man~'
+            'message' => 'thanh cong'
         ], 201);
     }
 
@@ -33,8 +33,6 @@ class CommentPostController extends Controller
     {
         
     }
-
-   
 
     public function destroy(string $id)
     {
