@@ -33,9 +33,9 @@ class LikePostController extends Controller
         //
     }
 
-    public function destroy(string $id)
+    public function destroy(string $likeid)
     {
-        $likepost = Like_post::find($id);
+        $likepost = Like_post::find($likeid);
 
         if (!$likepost) {
             return response()->json([

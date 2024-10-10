@@ -58,16 +58,7 @@ class PostController extends Controller
             ->pluck('thumbnail')
             ->toArray(); // Chuyển đổi thành mảng
         // Lấy tất cả các bình luận của bài đăng
-        $comments = Comment_post::where('post_id', $postId)
-            ->join('users', 'comment_post.user_id', '=', 'users.id')
-            ->select(
-                'users.id as commenter_user_id',
-                'users.name as commenter_name',
-                'users.avatar as commenter_avatar',
-                'comment_post.content as comment_content',
-                'comment_post.created_at as comment_created_at'
-            )
-            ->get();
+       
         // Chọn các trường cần thiết và loại bỏ user_id
         return response()->json([
             'user_id' => $post->user_id,
@@ -78,7 +69,6 @@ class PostController extends Controller
             'thumbnails' => $galleryThumbnails,
             'likecount' => $likepostCount,
             'commentcount' => $commentpostCount,
-            'comments' => $comments
         ]);
     }
     public function getAll($userId)

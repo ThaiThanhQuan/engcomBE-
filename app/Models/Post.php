@@ -10,7 +10,7 @@ class Post extends Model
 {
     use HasFactory;
 
-    protected $table ='post';
+    protected $table = 'post';
 
     protected $fillable = ['user_id', 'content'];
 
@@ -30,5 +30,9 @@ class Post extends Model
     public function like_post()
     {
         return $this->hasMany(Like_post::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

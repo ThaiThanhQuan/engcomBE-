@@ -29,7 +29,8 @@ Route::group([
     Route::resource('fakeThreads',FakeThreadsController::class);
     Route::resource('likepost',LikePostController::class);
     Route::resource('commentpost',CommentPostController::class);
-    Route::get('getPost',[PostController::class,'getAll']);
+    Route::resource('post',PostController::class);
+    Route::get('getAll/{userId}',[PostController::class,'getAll']);
 
     Route::get('search', [SearchController::class, 'search']);
     // Class cart banner
