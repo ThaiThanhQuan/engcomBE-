@@ -17,43 +17,53 @@ class FakeThreadsController extends Controller
     {
 
     }
-
     public function store(Request $request)
-    {        
-        // $request->validate([
-        //     'user_id' => 'required',
-        //     'content' => 'required|string|max:255',
-            
-        //     'video' => 'nullable|string|max:255',
-        //     'thumbnail' => 'required|array', 
-        //     'thumbnails.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', 
-        // ]);
-        var_dump($request);
+    {
+        // Xác thực dữ liệu đầu vào
+        $request->validate([
+            'user_id' => 'required', // Bắt buộc phải có user_id
+            'content' => 'required|string|max:255', // Nội dung bài viết bắt buộc, tối đa 255 ký tự
+            'thumbnails' => 'required|array', // Thumbnails là bắt buộc và có thể là mảng
+            'thumbnails.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Mỗi phần tử trong thumbnails phải là ảnh, tối đa 2MB
+        ]);
 
+        // Tạo một đối tượng Post mới
         $post = new Post();
         $post->user_id = $request->input('user_id');
         $post->content = $request->input('content');
-        
-        $post->thumbnail = $request->input('thumbnail');
-        $post->save();
+        $post->save(); // Lưu bài viết trước khi thêm hình ảnh vào gallery_post
 
+        // Khởi tạo mảng để lưu tên các ảnh
+        $imagePaths = [];
+
+        // Xử lý nếu có nhiều ảnh được tải lên
         if ($request->hasFile('thumbnails')) {
             foreach ($request->file('thumbnails') as $file) {
+                // Tạo tên file duy nhất cho mỗi ảnh
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                // Lưu file vào storage
-                $file->storeAs('uploads', $fileName, 'public');
-    
-                // Lưu vào bảng gallery
+
+                // Lưu ảnh vào thư mục 'uploads'
+                $file->move(public_path('uploads'), $fileName);
+
+                // Lưu thông tin vào bảng gallery_post
                 $gallery = new Gallery_post();
                 $gallery->post_id = $post->id; // Liên kết ảnh với bài viết
-                $gallery->image_path = $fileName; // Lưu tên file
+                $gallery->thumbnail = $fileName; // Lưu tên file
                 $gallery->save();
+
+                // Thêm tên ảnh vào mảng
+                $imagePaths[] = $fileName;
             }
         }
 
+        // Lưu tên ảnh vào bảng posts (nếu bạn muốn)
+        $post->thumbnail = json_encode($imagePaths); // Nếu bạn muốn lưu tên ảnh vào bảng posts
+        $post->save(); // Lưu lại bài viết nếu đã thêm trường images
+
+        // Trả về phản hồi JSON
         return response()->json([
             'data' => $post,
-            'message' => 'thanh cong mien man~'
+            'message' => 'Thêm bài viết và hình ảnh thành công'
         ], 201);
     }
 
@@ -63,7 +73,7 @@ class FakeThreadsController extends Controller
 
         $post = Post::join('users', 'post.user_id', '=', 'users.id')
             ->where('post.user_id', $id)
-            ->select('post.id', 'post.content', 'post.thumbnail', 'post.video', 'post.created_at', 'users.name as user_name', 'users.avatar as user_avatar')
+            ->select('post.id', 'post.content', 'post.thumbnail', 'post.created_at', 'users.name as user_name', 'users.avatar as user_avatar')
             ->get();
 
 
@@ -75,7 +85,6 @@ class FakeThreadsController extends Controller
                 'id' => $post->id,
                 'content' => $post->content,
                 'thumbnail' => $post->thumbnail,
-                'video' => $post->video,
                 'created_at' => $post->created_at,
                 'likecount' => $likepostCount,
                 'commentcount' => $commentpostCount,
@@ -97,18 +106,35 @@ class FakeThreadsController extends Controller
 
         if (!$post) {
             return response()->json([
-                'message' => 'post not found'
+                'message' => 'Post not found'
             ], 404);
         }
 
         $post->comment_post()->delete();
         $post->like_post()->delete();
+        // Xóa thumbnail nếu có
+        if ($post->thumbnail) {
+            $thumbnailPath = public_path('uploads/' . $post->thumbnail);
+            if (file_exists($thumbnailPath)) {
+                unlink($thumbnailPath); // Xóa file thumbnail
+            }
+        }
+        // Xóa tất cả ảnh trong gallery_post
+        $galleryImages = Gallery_post::where('post_id', $post->id)->get();
+        foreach ($galleryImages as $galleryImage) {
+            $imagePath = public_path('uploads/' . $galleryImage->thumbnail);
+            if (file_exists($imagePath)) {
+                unlink($imagePath); // Xóa file ảnh trong gallery
+            }
+            // Xóa record trong gallery_post
+            $galleryImage->delete();
+        }
         $post->delete();
 
-    
+
         return response()->json([
             'data' => $post,
             'message' => 'xoa thanh cong r babie',
-        ], 200); 
+        ], 200);
     }
 }

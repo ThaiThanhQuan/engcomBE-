@@ -12,7 +12,7 @@ class Post extends Model
 
     protected $table ='post';
 
-    protected $fillable = ['user_id', 'content', 'video'];
+    protected $fillable = ['user_id', 'content'];
 
     public $timestamps = 'true';
     const UPDATED_AT = null;
