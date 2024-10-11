@@ -31,9 +31,9 @@ class TopRankController extends Controller
         if($type == 'subscribe'){
             $Subscribes = Subscribe::join('users', 'subscribe.user_id', '=', 'users.id')
                 ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
-                         DB::raw('COUNT(subscribe.user_id) as subscribe_count'))
+                         DB::raw('COUNT(subscribe.user_id) as rank_count'))
                 ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
-                ->orderBy('subscribe_count', 'desc')
+                ->orderBy('rank_count', 'desc')
                 ->limit(10)
                 ->get();
         }
@@ -45,9 +45,9 @@ class TopRankController extends Controller
         if($type == 'classes'){
             $Classes = Classes::join('users', 'classes.user_id', '=', 'users.id')
                 ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
-                         DB::raw('COUNT(classes.user_id) as classes'))
+                         DB::raw('COUNT(classes.user_id) as rank_count'))
                 ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
-                ->orderBy('classes', 'desc')
+                ->orderBy('rank_count', 'desc')
                 ->limit(10)
                 ->get();
         }
