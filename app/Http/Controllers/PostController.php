@@ -10,18 +10,7 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
     {
         //
     }
@@ -30,7 +19,6 @@ class PostController extends Controller
         // Lấy tất cả bài đăng mà user_id không phải là $userId
         $post = Post::join('users', 'post.user_id', '=', 'users.id')
             ->leftJoin('gallery_post', 'post.id', '=', 'gallery_post.post_id')
-            // ->leftJoin('comment_post', 'post.id', '=', 'comment_post.post_id')
             ->where('post.id', $postId)
             ->select(
                 'users.id as user_id',
@@ -39,7 +27,7 @@ class PostController extends Controller
                 'post.id as post_id',
                 'post.content as post_content',
                 'post.thumbnail as post_thumbnail',
-                // 'gallery_post.thumbnail as gallery_thumbnail',
+                'post.created_at as created_at' // Thêm trường created_at từ post
             )
             ->first();
 
@@ -49,6 +37,7 @@ class PostController extends Controller
                 'message' => 'No posts found'
             ], 404);
         }
+
         // Đếm số lượng likes và comments
         $likepostCount = Like_post::where('post_id', $postId)->count();
         $commentpostCount = Comment_post::where('post_id', $postId)->count();
@@ -57,20 +46,23 @@ class PostController extends Controller
         $galleryThumbnails = Gallery_post::where('post_id', $postId)
             ->pluck('thumbnail')
             ->toArray(); // Chuyển đổi thành mảng
-        // Lấy tất cả các bình luận của bài đăng
-       
+
         // Chọn các trường cần thiết và loại bỏ user_id
         return response()->json([
-            'user_id' => $post->user_id,
-            'name' => $post->user_name,
-            'avatar' => $post->user_avatar,
-            'post_id' => $post->post_id,
+            'id' => $post->post_id,
             'content' => $post->post_content,
             'thumbnails' => $galleryThumbnails,
+            'created_at' => $post->created_at,
             'likecount' => $likepostCount,
             'commentcount' => $commentpostCount,
+            'user' => [
+                'user_id' => $post->user_id,
+                'name' => $post->user_name,
+                'avatar' => $post->user_avatar,
+            ],
         ]);
     }
+
     public function getAll($userId)
     {
         // Lấy tất cả bài đăng mà user_id không phải là $userId
@@ -96,17 +88,18 @@ class PostController extends Controller
 
             // Lấy thông tin người dùng
             $user = $post->user;
-
             return [
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_avatar' => $user->avatar,
-                'post_id' => $post->id,
+                'id' => $post->id,
                 'content' => $post->content,
-                'thumbnail' => $post->thumbnail,
                 'thumbnails' => $galleryThumbnails,
-                'like_count' => $likeCount,
-                'comment_count' => $commentCount,
+                'created_at' => $post->created_at,
+                'likecount' => $likeCount,
+                'commentcount' => $commentCount,
+                'user' => [
+                    'user_id' => $post->user_id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                ],
             ];
         });
 
