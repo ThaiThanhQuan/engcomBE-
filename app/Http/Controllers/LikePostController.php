@@ -21,17 +21,28 @@ class LikePostController extends Controller
    
     public function store(Request $request)
     {
+        $existingLike = Like_post::where('user_id', $request->input('user_id'))
+            ->where('post_id', $request->input('post_id'))
+            ->first();
+    
+        if ($existingLike) {
+            return response()->json([
+                'message' => 'Like đã tồn tại'
+            ], 409); // Trả về mã 409 Conflict
+        }
+    
+        // Nếu chưa tồn tại, tạo mới
         $likepost = new Like_post();
         $likepost->user_id = $request->input('user_id');
         $likepost->post_id = $request->input('post_id');
         $likepost->save();
-
+    
         return response()->json([
             'data' => $likepost,
             'message' => 'success'
         ], 201);
     }
-
+    
    
     public function show(string $id)
     {
@@ -54,6 +65,7 @@ class LikePostController extends Controller
     
         return response()->json([
             'message' => 'xoa thanh cong ',
+            'data' => $likepost,
         ], 200); 
     }
 }
