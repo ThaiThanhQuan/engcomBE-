@@ -84,6 +84,9 @@ Route::group([
     Route::post('/avatar/{id}', [AuthController::class, 'uploadAvatar']);
 
     Route::resource('customer', UserController::class);
+
+    Route::get('subscribetoprank/{type}', [TopRankController::class,'subscribe']);
+    Route::get('classestoprank/{type}', [TopRankController::class,'classes']);
 });
 
 
