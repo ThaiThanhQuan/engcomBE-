@@ -66,7 +66,7 @@ class CourseController extends Controller
                 // Thêm lesson text nếu có
                 foreach ($lesson->lessonText as $text) {
                     $content[] = [
-                        'text' => $text->content,
+                        'text' => $text->text,
                         'lesson_id' => $lesson->id,
                     ];
                 }

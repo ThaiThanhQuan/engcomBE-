@@ -61,7 +61,7 @@ class StudentCourseController extends Controller
                         ->first();
                     if ($textContent) {
                         $lessonContent['content'] = [
-                            'text' => $textContent->content,
+                            'text' => $textContent->text,
                             'lesson_id' => $lesson->id
                         ];
                     }

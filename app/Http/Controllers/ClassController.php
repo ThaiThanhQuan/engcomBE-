@@ -130,7 +130,7 @@ class ClassController extends Controller
                     // Xử lý phần còn lại
                     else {
                         DB::table('lesson_text')->insert([
-                            'content' => $contents['content'],
+                            'text' => $contents['text'],
                             'lesson_id' => $lessonID,
                         ]);
                     }
@@ -318,7 +318,7 @@ class ClassController extends Controller
                     // Nếu không tìm thấy, tạo mới
                     $lessonID = DB::table('lesson')->insertGetId([
                         'course_id' => $courseID,
-                        'name' => $lesson['title'],
+                        'name' => $lesson['name'],
                         'type' => $lesson['type']
                     ]);
                 }
@@ -376,11 +376,21 @@ class ClassController extends Controller
                                 'lesson_id' => $lessonID,
                             ]);
                         } else if (isset($contents['text'])) {
-                            // Tạo mới cho lesson_text
-                            DB::table('lesson_text')->insert([
-                                'content' => $contents['text'],
-                                'lesson_id' => $lessonID,
-                            ]);
+                            // Kiểm tra xem có nội dung văn bản đã tồn tại không
+                            $existingText = DB::table('lesson_text')->where('lesson_id', $lessonID)->first();
+                            if ($existingText) {
+                                // Cập nhật nội dung văn bản
+                                DB::table('lesson_text')->where('id', $existingText->id)->update([
+                                    'text' => $contents['text'],
+                                    'lesson_id' => $lessonID,
+                                ]);
+                            } else {
+                                // Tạo mới cho lesson_text
+                                DB::table('lesson_text')->insert([
+                                    'text' => $contents['text'],
+                                    'lesson_id' => $lessonID,
+                                ]);
+                            }
                         }
                     }
                 }
