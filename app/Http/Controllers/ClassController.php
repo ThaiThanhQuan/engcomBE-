@@ -328,72 +328,64 @@ class ClassController extends Controller
                 });
                 foreach ($contentArr as $contents) {
                     $contentID = $contents['id'] ?? null;
-
-                    if ($contentID) {
-                        // Cập nhật nội dung nếu tồn tại
-                        $existingContent = DB::table('lesson_exercise')->where('id', $contentID)->first();
-
-                        if ($existingContent) {
-                            // Cập nhật nội dung
-                            DB::table('lesson_exercise')->where('id', $contentID)->update([
-                                'lesson_id' => $lessonID,
-                                'title' => $contents['title'] ?? null,
-                                'content' => $contents['content'] ?? null,
+                
+                    // Xử lý exercise
+                    if (isset($contents['questions']) && !empty($contents['questions'])) {
+                        // Chỉ tạo mới cho lesson_exercise nếu có câu hỏi
+                        $exerciseID = DB::table('lesson_exercise')->insertGetId([
+                            'lesson_id' => $lessonID,
+                            'title' => $contents['title'] ?? null,
+                            'content' => $contents['content'] ?? null,
+                        ]);
+                
+                        // Chèn câu hỏi cho exercise mới
+                        foreach ($contents['questions'] as $item) {
+                            DB::table('exercise_options')->insert([
+                                'lesson_exercise_id' => $exerciseID,
+                                'text' => $item['name'],
+                                'is_correct' => $item['is_correct']
                             ]);
-
-                            // Cập nhật câu hỏi nếu có
-                            if (isset($contents['questions']) && !empty($contents['questions'])) {
-                                foreach ($contents['questions'] as $item) {
-                                    DB::table('exercise_options')->updateOrInsert(
-                                        ['lesson_exercise_id' => $contentID, 'text' => $item['name']],
-                                        ['is_correct' => $item['is_correct']]
-                                    );
-                                }
-                            }
                         }
-                    } else {
-                        // Nếu không có ID, kiểm tra các trường hợp khác
-                        if (isset($contents['questions']) && !empty($contents['questions'])) {
-                            // Tạo mới cho lesson_exercise
-                            $exerciseID = DB::table('lesson_exercise')->insertGetId([
-                                'lesson_id' => $lessonID,
-                                'title' => $contents['title'] ?? null,
+                    }
+                
+                    // Xử lý video
+                    if (isset($contents['video']) && !empty($contents['video'])) {
+                        $existingVideo = DB::table('lesson_video')->where('lesson_id', $lessonID)->first();
+                        if ($existingVideo) {
+                            // Cập nhật video nếu tồn tại
+                            DB::table('lesson_video')->where('id', $existingVideo->id)->update([
                                 'content' => $contents['content'] ?? null,
+                                'video' => $contents['video'],
+                                'lesson_id' => $lessonID,
                             ]);
-
-                            foreach ($contents['questions'] as $item) {
-                                DB::table('exercise_options')->insert([
-                                    'lesson_exercise_id' => $exerciseID,
-                                    'text' => $item['name'],
-                                    'is_correct' => $item['is_correct']
-                                ]);
-                            }
-                        } else if (isset($contents['video']) && !empty($contents['video'])) {
+                        } else {
                             // Tạo mới cho lesson_video
                             DB::table('lesson_video')->insert([
                                 'content' => $contents['content'] ?? null,
                                 'video' => $contents['video'],
                                 'lesson_id' => $lessonID,
                             ]);
-                        } else if (isset($contents['text'])) {
-                            // Kiểm tra xem có nội dung văn bản đã tồn tại không
-                            $existingText = DB::table('lesson_text')->where('lesson_id', $lessonID)->first();
-                            if ($existingText) {
-                                // Cập nhật nội dung văn bản
-                                DB::table('lesson_text')->where('id', $existingText->id)->update([
-                                    'text' => $contents['text'],
-                                    'lesson_id' => $lessonID,
-                                ]);
-                            } else {
-                                // Tạo mới cho lesson_text
-                                DB::table('lesson_text')->insert([
-                                    'text' => $contents['text'],
-                                    'lesson_id' => $lessonID,
-                                ]);
-                            }
                         }
                     }
-                }
+                
+                    // Xử lý text
+                    if (isset($contents['text'])) {
+                        $existingText = DB::table('lesson_text')->where('lesson_id', $lessonID)->first();
+                        if ($existingText) {
+                            // Cập nhật nội dung văn bản
+                            DB::table('lesson_text')->where('id', $existingText->id)->update([
+                                'text' => $contents['text'],
+                                'lesson_id' => $lessonID,
+                            ]);
+                        } else {
+                            // Tạo mới cho lesson_text
+                            DB::table('lesson_text')->insert([
+                                'text' => $contents['text'],
+                                'lesson_id' => $lessonID,
+                            ]);
+                        }
+                    }
+                }                        
 
             }
         }
