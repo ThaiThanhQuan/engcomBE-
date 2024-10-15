@@ -154,6 +154,12 @@ class ClassController extends Controller
         // Tìm đối tượng theo ID
         $class = Classes::findOrFail($id);
 
+        // Kiểm tra giá trị của thuộc tính 'deleted'
+        if ($class->deleted == 0) {
+            return response()->json([
+                'message' => 'Class is deleted and cannot be accessed.',
+            ], 403);
+        }
         // Lấy thông tin người dùng từ user_id
         $user = User::find($class->user_id);
         $userInfo = [
@@ -194,6 +200,9 @@ class ClassController extends Controller
         // Phân loại và lấy thông tin người dùng, số lượng comment
         foreach ($classes as $class) {
             // Lấy thông tin người dùng từ user_id
+            if ($class->deleted == 0) {
+                continue; // Bỏ qua lớp học đã bị xóa
+            }
             $user = User::find($class->user_id);
             $userInfo = [
                 'user_id' => $user->id,
@@ -328,7 +337,7 @@ class ClassController extends Controller
                 });
                 foreach ($contentArr as $contents) {
                     $contentID = $contents['id'] ?? null;
-                
+
                     // Xử lý exercise
                     if (isset($contents['questions']) && !empty($contents['questions'])) {
                         // Chỉ tạo mới cho lesson_exercise nếu có câu hỏi
@@ -337,7 +346,7 @@ class ClassController extends Controller
                             'title' => $contents['title'] ?? null,
                             'content' => $contents['content'] ?? null,
                         ]);
-                
+
                         // Chèn câu hỏi cho exercise mới
                         foreach ($contents['questions'] as $item) {
                             DB::table('exercise_options')->insert([
@@ -347,7 +356,7 @@ class ClassController extends Controller
                             ]);
                         }
                     }
-                
+
                     // Xử lý video
                     if (isset($contents['video']) && !empty($contents['video'])) {
                         $existingVideo = DB::table('lesson_video')->where('lesson_id', $lessonID)->first();
@@ -367,7 +376,7 @@ class ClassController extends Controller
                             ]);
                         }
                     }
-                
+
                     // Xử lý text
                     if (isset($contents['text'])) {
                         $existingText = DB::table('lesson_text')->where('lesson_id', $lessonID)->first();
@@ -385,7 +394,7 @@ class ClassController extends Controller
                             ]);
                         }
                     }
-                }                        
+                }
 
             }
         }
@@ -404,48 +413,20 @@ class ClassController extends Controller
 
     public function destroy($classId)
     {
-        // Xóa tất cả nội dung liên quan đến lớp học
-        DB::table('lesson_text')->whereIn('lesson_id', function ($query) use ($classId) {
-            $query->select('id')->from('lesson')->whereIn('course_id', function ($subQuery) use ($classId) {
-                $subQuery->select('id')->from('course')->where('class_id', $classId);
-            });
-        })->delete();
+        // Tìm bản ghi với id tương ứng
+        $class = Classes::where('id', $classId)->first();
 
-        DB::table('lesson_video')->whereIn('lesson_id', function ($query) use ($classId) {
-            $query->select('id')->from('lesson')->whereIn('course_id', function ($subQuery) use ($classId) {
-                $subQuery->select('id')->from('course')->where('class_id', $classId);
-            });
-        })->delete();
+        if ($class) {
+            // Cập nhật cột 'deleted' về 0
+            $class->deleted = 0;
+            $class->save();
 
-        DB::table('lesson_exercise')->whereIn('lesson_id', function ($query) use ($classId) {
-            $query->select('id')->from('lesson')->whereIn('course_id', function ($subQuery) use ($classId) {
-                $subQuery->select('id')->from('course')->where('class_id', $classId);
-            });
-        })->delete();
+            return response()->json(['message' => 'Class has been marked as not deleted.']);
+        }
 
-        DB::table('exercise_options')->whereIn('lesson_exercise_id', function ($query) use ($classId) {
-            $query->select('id')->from('lesson_exercise')->whereIn('lesson_id', function ($subQuery) use ($classId) {
-                $subQuery->select('id')->from('lesson')->whereIn('course_id', function ($subSubQuery) use ($classId) {
-                    $subSubQuery->select('id')->from('course')->where('class_id', $classId);
-                });
-            });
-        })->delete();
-
-        // Xóa lesson và course
-        DB::table('lesson')->whereIn('course_id', function ($query) use ($classId) {
-            $query->select('id')->from('course')->where('class_id', $classId);
-        })->delete();
-
-        DB::table('course')->where('class_id', $classId)->delete();
-
-        // Cuối cùng, xóa lớp học
-        DB::table('classes')->where('id', $classId)->delete();
-
-        return response()->json([
-            'message' => 'Class deleted successfully',
-            'status' => true,
-        ]);
+        return response()->json(['message' => 'Class not found.'], 404);
     }
+
 
     public function moreShow($type)
     {
@@ -457,6 +438,9 @@ class ClassController extends Controller
 
         // Phân loại và lấy thông tin người dùng, số lượng comment
         foreach ($classes as $class) {
+            if ($class->deleted == 0) {
+                continue; // Bỏ qua lớp học đã bị xóa
+            }
             // Lấy thông tin người dùng từ user_id
             $user = User::find($class->user_id);
             $userInfo = [
@@ -571,7 +555,7 @@ class ClassController extends Controller
                     'type' => $class->type,
                     'subject' => $class->subject
                 ],
-                'info' =>[
+                'info' => [
                     [
                         'user' => [
                             'user_id' => $class->user->id,
@@ -628,7 +612,7 @@ class ClassController extends Controller
                         // Bạn có thể thêm nhiều thông tin khác ở đây
                     ]
                 ];
-                
+
             }
             return $result;
         };

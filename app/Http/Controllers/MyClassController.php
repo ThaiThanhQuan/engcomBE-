@@ -47,7 +47,7 @@ class MyClassController extends Controller
     public function update(Request $request, string $id)
     {
     }
- function destroy(string $id)
+    function destroy(string $id)
     {
     }
 }

@@ -46,6 +46,7 @@ class TopRankController extends Controller
             $Classes = Classes::join('users', 'classes.user_id', '=', 'users.id')
                 ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
                          DB::raw('COUNT(classes.user_id) as rank_count'))
+                         ->where('classes.deleted', '!=', 0)
                 ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
                 ->orderBy('rank_count', 'desc')
                 ->limit(10)

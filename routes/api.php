@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FakeThreadsController;
 use App\Http\Controllers\LikePostController;
 use App\Http\Controllers\CommentPostController;
+use App\Http\Controllers\LessonContentController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -53,7 +54,9 @@ Route::group([
     // Teacher create
     Route::resource('course', CourseController::class);
     Route::get('own-course/{class_id}', [CourseController::class, 'ownShow']);
+    
     Route::resource('lesson', LessonController::class);
+    Route::resource('lesson_content', LessonContentController::class);
 
     // Student 
     Route::get('student/course', [StudentCourseController::class,'index']);
