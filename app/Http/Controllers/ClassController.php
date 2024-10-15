@@ -75,7 +75,8 @@ class ClassController extends Controller
         $input_courses = $request->input("courses");
         $input_lessons = $request->input("lessons");
         $input_contents = $request->input("contents");
-
+    
+        // Tạo lớp học mới và lấy ID
         $classID = DB::table("classes")->insertGetId([
             'user_id' => $input_cart['user_id'],
             'thumbnail' => $input_cart['thumbnail'],
@@ -84,60 +85,71 @@ class ClassController extends Controller
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
         ]);
+    
         foreach ($input_courses as $course) {
             $course_id = $course['id'];
+    
+            // Lọc bài học theo khóa học
             $lessonArr = array_filter($input_lessons, function ($item) use ($course_id) {
                 return $item['course_id'] === $course_id;
             });
+    
+            // Tạo khóa học mới và lấy ID
             $courseID = DB::table('course')->insertGetId([
                 'class_id' => $classID,
                 'name' => $course['name'],
             ]);
+    
             foreach ($lessonArr as $lesson) {
                 $lesson_id = $lesson['id'];
+    
+                // Lọc nội dung theo bài học
                 $contentArr = array_filter($input_contents, function ($item) use ($lesson_id) {
                     return $item['lesson_id'] === $lesson_id;
                 });
+    
+                // Tạo bài học mới và lấy ID
                 $lessonID = DB::table('lesson')->insertGetId([
                     'course_id' => $courseID,
                     'name' => $lesson['name'],
                     'type' => $lesson['type']
                 ]);
+    
                 foreach ($contentArr as $contents) {
-                    // Kiểm tra nếu khóa 'questions' tồn tại và không rỗng
+                    // Xử lý bài tập
                     if (isset($contents['questions']) && !empty($contents['questions'])) {
                         $exerciseID = DB::table('lesson_exercise')->insertGetId([
                             'lesson_id' => $lessonID,
                             'title' => $contents['title'],
-                            'content' => $contents['content'],
+                            'text' => $contents['text'],
                         ]);
                         foreach ($contents['questions'] as $item) {
-                            DB::table('exercise_options')->insertGetId([
+                            DB::table('exercise_options')->insert([
                                 'lesson_exercise_id' => $exerciseID,
                                 'text' => $item['name'],
                                 'is_correct' => $item['is_correct']
                             ]);
                         }
                     }
-                    // Kiểm tra nếu khóa 'video' tồn tại và không rỗng
-                    else if (isset($contents['video']) && !empty($contents['video'])) {
+                    // Xử lý video (bây giờ là title)
+                    else if (isset($contents['title']) && !empty($contents['title'])) {
                         DB::table('lesson_video')->insert([
-                            'content' => $contents['content'],
-                            'video' => $contents['video'],
+                            'text' => $contents['text'],
+                            'title' => $contents['title'], // Thay video bằng title
                             'lesson_id' => $lessonID,
                         ]);
                     }
-                    // Xử lý phần còn lại
+                    // Xử lý text (bây giờ là text)
                     else {
                         DB::table('lesson_text')->insert([
-                            'text' => $contents['text'],
+                            'text' => $contents['text'], // Chưa thay đổi
                             'lesson_id' => $lessonID,
                         ]);
                     }
                 }
             }
-
         }
+    
         return response()->json([
             'message' => 'success',
             'status' => true,
@@ -149,6 +161,7 @@ class ClassController extends Controller
             ]
         ]);
     }
+    
     public function show(string $id)
     {
         // Tìm đối tượng theo ID
