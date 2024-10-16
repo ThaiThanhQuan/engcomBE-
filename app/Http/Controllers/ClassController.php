@@ -126,7 +126,7 @@ class ClassController extends Controller
                         foreach ($contents['questions'] as $item) {
                             DB::table('exercise_options')->insert([
                                 'lesson_exercise_id' => $exerciseID,
-                                'text' => $item['name'],
+                                'text' => $item['text'],
                                 'is_correct' => $item['is_correct']
                             ]);
                         }
@@ -284,145 +284,37 @@ class ClassController extends Controller
         ], 200);
     }
 
-
     public function update(Request $request, $classId)
     {
-        $input_cart = $request->input("carts");
-        $input_courses = $request->input("courses");
-        $input_lessons = $request->input("lessons");
-        $input_contents = $request->input("contents");
+        // Lấy dữ liệu từ request
+        $input = $request->only([
+            'user_id',
+            'name',
+            'description',
+            'password',
+            'thumbnail',
+            'type',
+            'subject',
+        ]);
 
         // Cập nhật thông tin class
-        DB::table("classes")->where('id', $classId)->update([
-            'user_id' => $input_cart['user_id'],
-            'thumbnail' => $input_cart['thumbnail'],
-            'description' => $input_cart['description'],
-            'password' => $input_cart['password'],
-            'type' => $input_cart['type'],
-            'name' => $input_cart['name'],
-        ]);
+        $updated = DB::table("classes")->where('id', $classId)->update($input);
 
-        // Cập nhật hoặc thêm mới courses
-        foreach ($input_courses as $course) {
-            $courseID = $course['id'];
-            // Kiểm tra xem course có tồn tại không
-            $existingCourse = DB::table('course')->where('id', $courseID)->first();
-            if ($existingCourse) {
-                // Cập nhật nếu tồn tại
-                DB::table('course')->where('id', $courseID)->update([
-                    'class_id' => $classId,
-                    'name' => $course['name'],
-                ]);
-            } else {
-                // Nếu không tìm thấy, tạo mới
-                $courseID = DB::table('course')->insertGetId([
-                    'class_id' => $classId,
-                    'name' => $course['name'],
-                ]);
-            }
-            // Cập nhật hoặc thêm mới lessons
-            $lessonArr = array_filter($input_lessons, function ($item) use ($courseID) {
-                return $item['course_id'] === $courseID;
-            });
-
-            foreach ($lessonArr as $lesson) {
-                $lessonID = $lesson['id'];
-                // Kiểm tra xem lesson có tồn tại không
-                $existingLesson = DB::table('lesson')->where('id', $lessonID)->first();
-                if ($existingLesson) {
-                    // Cập nhật lesson nếu tồn tại
-                    DB::table('lesson')->where('id', $lessonID)->update([
-                        'course_id' => $courseID,
-                        'name' => $lesson['name'],
-                        'type' => $lesson['type']
-                    ]);
-                } else {
-                    // Nếu không tìm thấy, tạo mới
-                    $lessonID = DB::table('lesson')->insertGetId([
-                        'course_id' => $courseID,
-                        'name' => $lesson['name'],
-                        'type' => $lesson['type']
-                    ]);
-                }
-                // Cập nhật hoặc thêm mới content
-                $contentArr = array_filter($input_contents, function ($item) use ($lessonID) {
-                    return $item['lesson_id'] === $lessonID;
-                });
-                foreach ($contentArr as $contents) {
-                    $contentID = $contents['id'] ?? null;
-
-                    // Xử lý exercise
-                    if (isset($contents['questions']) && !empty($contents['questions'])) {
-                        // Chỉ tạo mới cho lesson_exercise nếu có câu hỏi
-                        $exerciseID = DB::table('lesson_exercise')->insertGetId([
-                            'lesson_id' => $lessonID,
-                            'title' => $contents['title'] ?? null,
-                            'content' => $contents['content'] ?? null,
-                        ]);
-
-                        // Chèn câu hỏi cho exercise mới
-                        foreach ($contents['questions'] as $item) {
-                            DB::table('exercise_options')->insert([
-                                'lesson_exercise_id' => $exerciseID,
-                                'text' => $item['name'],
-                                'is_correct' => $item['is_correct']
-                            ]);
-                        }
-                    }
-
-                    // Xử lý video
-                    if (isset($contents['video']) && !empty($contents['video'])) {
-                        $existingVideo = DB::table('lesson_video')->where('lesson_id', $lessonID)->first();
-                        if ($existingVideo) {
-                            // Cập nhật video nếu tồn tại
-                            DB::table('lesson_video')->where('id', $existingVideo->id)->update([
-                                'content' => $contents['content'] ?? null,
-                                'video' => $contents['video'],
-                                'lesson_id' => $lessonID,
-                            ]);
-                        } else {
-                            // Tạo mới cho lesson_video
-                            DB::table('lesson_video')->insert([
-                                'content' => $contents['content'] ?? null,
-                                'video' => $contents['video'],
-                                'lesson_id' => $lessonID,
-                            ]);
-                        }
-                    }
-
-                    // Xử lý text
-                    if (isset($contents['text'])) {
-                        $existingText = DB::table('lesson_text')->where('lesson_id', $lessonID)->first();
-                        if ($existingText) {
-                            // Cập nhật nội dung văn bản
-                            DB::table('lesson_text')->where('id', $existingText->id)->update([
-                                'text' => $contents['text'],
-                                'lesson_id' => $lessonID,
-                            ]);
-                        } else {
-                            // Tạo mới cho lesson_text
-                            DB::table('lesson_text')->insert([
-                                'text' => $contents['text'],
-                                'lesson_id' => $lessonID,
-                            ]);
-                        }
-                    }
-                }
-
-            }
+        // Kiểm tra xem có bản ghi nào được cập nhật không
+        if ($updated) {
+            return response()->json([
+                'message' => 'Update success',
+                'status' => true,
+                'data' => $input,
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'No changes made or class not found.',
+                'status' => false,
+            ], 200);
         }
-
-        return response()->json([
-            'message' => 'Update success',
-            'status' => true,
-            'data' => [
-                'carts' => $input_cart,
-                'courses' => $input_courses,
-                'lessons' => $input_lessons,
-                'content' => $input_contents,
-            ]
-        ]);
     }
+
 
     public function destroy($classId)
     {

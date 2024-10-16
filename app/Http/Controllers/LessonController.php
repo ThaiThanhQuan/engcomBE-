@@ -91,7 +91,7 @@ class LessonController extends Controller
     public function destroy($id)
     {
         // Tìm lesson theo ID cùng với các mối quan hệ cần thiết
-        $lesson = Lesson::with(['videos', 'lessonText', 'lessonExercises.exerciseOptions'])->find($id);
+        $lesson = Lesson::with(['videos', 'lessonText', 'lessonExercises'])->find($id);
 
         if ($lesson) {
             // Xóa tất cả videos liên quan
@@ -112,10 +112,7 @@ class LessonController extends Controller
                 foreach ($exercise->exerciseOptions as $option) {
                     $option->delete();
                 }
-                // Xóa lessonExercise
-                foreach ($exercise->lessonExercises as $exercise) {
-                    $exercise->delete();
-                }
+                $exercise->delete();
             }
 
             // Cuối cùng xóa lesson

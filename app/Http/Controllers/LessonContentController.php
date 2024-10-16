@@ -60,8 +60,8 @@ class LessonContentController extends Controller
             $exercise->save();
 
             // Kiểm tra nếu có các tùy chọn (options) trong request
-            if ($request->has('options')) {
-                foreach ($request->options as $option) {
+            if ($request->has('questions')) {
+                foreach ($request->questions as $option) {
                     $exerciseOption = new ExerciseOption();
                     $exerciseOption->lesson_exercise_id = $exercise->id;
                     $exerciseOption->text = $option['text'];

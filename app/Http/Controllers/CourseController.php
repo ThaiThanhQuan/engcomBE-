@@ -104,7 +104,7 @@ class CourseController extends Controller
                         $content[] = [
                             'id' => $exercise->id,
                             'title' => $exercise->title,
-                            'text' => $exercise->content,
+                            'text' => $exercise->text,
                             'lesson_id' => $lesson->id,
                             'questions' => $questions,
                         ];

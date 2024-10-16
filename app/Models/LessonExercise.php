@@ -9,7 +9,7 @@ class LessonExercise extends Model
 {
     use HasFactory;
     protected $table = 'lesson_exercise';
-    protected $fillable = ['id', 'lesson_id', 'title','content'];
+    protected $fillable = ['id', 'lesson_id', 'title','text'];
 
     public $timestamps = false;
 
