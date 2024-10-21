@@ -84,6 +84,7 @@ class ClassController extends Controller
             'password' => $input_cart['password'],
             'type' => $input_cart['type'],
             'name' => $input_cart['name'],
+            'subject' => $input_cart['subject'],
         ]);
     
         foreach ($input_courses as $course) {
@@ -423,8 +424,8 @@ class ClassController extends Controller
             $query->where('subject', $type);
         }
 
-        // Đếm số người đăng ký
-        $query->withCount('subscribes'); // Đếm số người đăng ký ngay từ đầu
+        // Đếm số người đăng ký và bình luận
+        $query->withCount(['subscribes', 'comments']); // Đếm cả số người đăng ký và bình luận
 
         // Sắp xếp theo điều kiện filter
         if ($filter == 'newest') {
@@ -467,8 +468,8 @@ class ClassController extends Controller
                             'name' => $class->user->name,
                             'avatar' => $class->user->avatar,
                         ],
-                        'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
-                        'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
+                        'comment_count' => $class->comments_count, // Lấy số lượng bình luận
+                        'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký
                     ]
                 ]
             ];
@@ -477,66 +478,68 @@ class ClassController extends Controller
         // Trả về kết quả (JSON)
         return response()->json($result);
     }
+
     public function topRate()
     {
-        // Lấy 4 lớp có số lượng đăng ký (subscribes) nhiều nhất cho cả private và public
+        // Lấy lớp có số lượng đăng ký và bình luận cho cả private và public
         $classes = Classes::whereIn('type', ['private', 'public'])
-            ->withCount('subscribes')
-            ->orderBy('subscribes_count', 'desc')
-            ->get()
-            ->groupBy('type');
-
-        // Helper nội bộ để format dữ liệu lớp
-        $formatClasses = function ($classes) {
-            $result = [];
-            foreach ($classes as $class) {
-                $result[] = [
-                    'class' => [
-                        'id' => $class->id,
-                        'name' => $class->name,
-                        'user_id' => $class->user_id,
-                        'description' => $class->description,
-                        'thumbnail' => $class->thumbnail,
-                        'deleted' => $class->deleted,
-                        'created_at' => $class->created_at,
-                        'updated_at' => $class->updated_at,
-                        'password' => $class->password,
-                        'type' => $class->type,
-                        'subject' => $class->subject
-                    ],
-                    'info' => [
-                        [
-                            'user' => [
-                                'user_id' => $class->user->id,
-                                'name' => $class->user->name,
-                                'avatar' => $class->user->avatar,
-                            ],
-                            'comment_count' => 0, // Hoặc lấy dữ liệu từ bảng comment nếu có
-                            'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký nếu có
+            ->select('classes.*')
+            ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id') // Join với bảng subscribe
+            ->leftJoin('comments', 'classes.id', '=', 'comments.class_id') // Join với bảng comments
+            ->groupBy('classes.id') // Nhóm theo lớp
+            ->orderByRaw('COUNT(subscribe.id) DESC') // Sắp xếp theo số lượng đăng ký
+            ->get();
+    
+        // Tạo mảng kết quả để lưu thông tin về lớp
+        $result = [];
+        foreach ($classes as $class) {
+            // Đếm số lượng đăng ký và bình luận
+            $subscribeCount = Subscribe::where('class_id', $class->id)->count();
+            $commentCount = Comment::where('class_id', $class->id)->count();
+            $classComments = Comment::where('class_id', $class->id)->get(); // Lấy danh sách bình luận
+    
+            $result[] = [
+                'class' => [
+                    'id' => $class->id,
+                    'name' => $class->name,
+                    'user_id' => $class->user_id,
+                    'description' => $class->description,
+                    'thumbnail' => $class->thumbnail,
+                    'deleted' => $class->deleted,
+                    'created_at' => $class->created_at,
+                    'updated_at' => $class->updated_at,
+                    'password' => $class->password,
+                    'type' => $class->type,
+                    'subject' => $class->subject
+                ],
+                'info' => [
+                    [
+                        'user' => [
+                            'user_id' => $class->user->id,
+                            'name' => $class->user->name,
+                            'avatar' => $class->user->avatar,
                         ],
-                        // Bạn có thể thêm nhiều thông tin khác ở đây
-                    ]
-                ];
-
-            }
-            return $result;
-        };
-
-        // Lấy ra tối đa 4 lớp từ nhóm private
-        if (isset($classes['private'])) {
-            $result['private'] = $formatClasses($classes['private']->take(4));
+                        'comment_count' => $commentCount, // Số lượng bình luận
+                        'subscribe_count' => $subscribeCount // Số lượng đăng ký
+                    ],
+                ],
+                'comments' => $classComments // Danh sách bình luận
+            ];
         }
-
-        // Lấy ra tối đa 4 lớp từ nhóm public
-        if (isset($classes['public'])) {
-            $result['public'] = $formatClasses($classes['public']->take(4));
+    
+        // Nhóm kết quả theo loại
+        $groupedResult = [
+            'private' => [],
+            'public' => []
+        ];
+    
+        foreach ($result as $item) {
+            $groupedResult[$item['class']['type']][] = $item;
         }
-
+    
         // Trả về kết quả dưới dạng JSON
-        return response()->json($result);
+        return response()->json($groupedResult);
     }
-
-
-
+    
 
 }
