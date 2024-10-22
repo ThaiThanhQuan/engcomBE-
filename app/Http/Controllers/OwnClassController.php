@@ -41,22 +41,20 @@ class OwnClassController extends Controller
             // Lấy tất cả các course cho class
             $courses = Course::where('class_id', $class->id)->get();
             $totalLessons = 0;
-            $currentLesson = null;
-    
+            $currentLesson = 0; 
+
             foreach ($courses as $course) {
                 // Lấy tất cả các bài học cho course
                 $lessons = Lesson::where('course_id', $course->id)->get();
                 $totalLessons += $lessons->count();
-    
+            
                 // Kiểm tra tiến trình của người dùng cho các bài học trong course
                 $progressData = $this->getProgressData($user_id, $lessons);
                 
-                // Lưu số thứ tự bài học hiện tại
-                if ($progressData['completed_count']) {
-                    $currentLesson = $progressData['completed_count'];
-                }
+                // Cộng dồn số bài học đã hoàn thành
+                $currentLesson += $progressData['completed_count'];
             }
-    
+            
             // Gộp dữ liệu vào infoData
             $infoData = [
                 'info' => [
@@ -65,7 +63,7 @@ class OwnClassController extends Controller
                     'subscribe_count' => $subscribeCount,
                 ],
                 'progress' => [
-                    'current_lesson' => $currentLesson, // Trả về số thứ tự bài học chưa hoàn thành
+                    'current_lesson' => $currentLesson, // Tổng số bài học đã hoàn thành
                     'total_lesson' => (string)$totalLessons, // Chuyển đổi tổng số bài học sang chuỗi
                 ]
             ];
@@ -83,8 +81,7 @@ class OwnClassController extends Controller
             ->where('is_completed', true)
             ->count();
     
-        $totalLessonsCount = count($lessons); // Tổng số bài học
-    
+        $totalLessonsCount = count($lessons); 
         return [
             'completed_count' => $completedLessonsCount, // Số lượng bài học đã hoàn thành
             'total_lesson' => $totalLessonsCount, // Tổng số bài học

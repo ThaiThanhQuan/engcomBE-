@@ -411,6 +411,7 @@ class ClassController extends Controller
         $filter = $request->query('filter', 'all');
 
         $query = Classes::query();
+        $query->where('deleted', 1);
 
         // Lọc theo loại lớp (private/public)
         if ($class == 'private') {
