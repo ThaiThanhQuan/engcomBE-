@@ -487,7 +487,7 @@ class ClassController extends Controller
             ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id') // Join với bảng subscribe
             ->leftJoin('comments', 'classes.id', '=', 'comments.class_id') // Join với bảng comments
             ->groupBy('classes.id') // Nhóm theo lớp
-            ->orderByRaw('COUNT(subscribe.id) DESC') // Sắp xếp theo số lượng đăng ký
+            ->orderByRaw('COUNT(subscribe.id) DESC')
             ->get();
     
         // Tạo mảng kết quả để lưu thông tin về lớp
@@ -519,11 +519,11 @@ class ClassController extends Controller
                             'name' => $class->user->name,
                             'avatar' => $class->user->avatar,
                         ],
-                        'comment_count' => $commentCount, // Số lượng bình luận
-                        'subscribe_count' => $subscribeCount // Số lượng đăng ký
+                        'comment_count' => $commentCount, 
+                        'subscribe_count' => $subscribeCount 
                     ],
                 ],
-                'comments' => $classComments // Danh sách bình luận
+                'comments' => $classComments 
             ];
         }
     
