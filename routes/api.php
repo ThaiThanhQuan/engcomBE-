@@ -11,6 +11,8 @@ use App\Http\Controllers\FakeThreadsController;
 use App\Http\Controllers\LikePostController;
 use App\Http\Controllers\CommentPostController;
 use App\Http\Controllers\LessonContentController;
+use App\Http\Controllers\GetBlogsController;
+
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
