@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use DB;
+use App\Models\User;
+
 use Illuminate\Http\Request;
 
 class GetUserController extends Controller
@@ -36,10 +38,19 @@ class GetUserController extends Controller
     
 
  
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    public function update(Request $request, string $userid)
+{
+
+    $user = User::find($userid);
+    $roleid = $request->input('role_id');
+    $user->update(['role_id' => $roleid]);
+    return response()->json([
+        'status' => true,
+        'message' => 'Cập nhật role_id cua user thanh cong',
+        'data' => $user,
+    ], 200);
+}
+
 
     
     public function destroy(string $id)

@@ -137,16 +137,19 @@ class BlogController extends Controller
     }
 
     // Xóa Blog
-    public function destroy(Blog $blog)
-    {
-        $blog->delete();
-        $arr = [
-            'status' => true,
-            'message' => 'Bài viết đã được xóa',
-            'data' => $blog,
-        ];
-        return response()->json($arr, 200);
-    }
+    public function destroy($blogid)
+{
+    $blog = Blog::find($blogid);
+    $blog->update(['deleted' => 0]);
+    $arr = [
+        'status' => true,
+        'message' => 'delete thanh cong',
+        'data' => $blog,
+    ];
+
+    return response()->json($arr, 200);
+}
+
     public function upload(Request $request) {
         $request->validate([
             'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',

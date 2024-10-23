@@ -323,11 +323,10 @@ class ClassController extends Controller
         $class = Classes::where('id', $classId)->first();
 
         if ($class) {
-            // Cập nhật cột 'deleted' về 0
             $class->deleted = 0;
             $class->save();
 
-            return response()->json(['message' => 'Class has been marked as not deleted.']);
+            return response()->json(['message' => 'class da duoc xoa']);
         }
 
         return response()->json(['message' => 'Class not found.'], 404);

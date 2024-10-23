@@ -45,14 +45,14 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy user',
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $user
@@ -93,15 +93,22 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        $user = User::where('role_id', 1)->find($id);
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-        $user->delete();
+
+        $user = User::find($id);
+
+
+
+
+        $user->update(['deleted' => 0]);
+
+
         $arr = [
             'status' => true,
-            'message' => 'User đã được xóa',
+            'message' => 'Xóa thành công (đã cập nhật deleted = 0)',
+            'data' => $user,
         ];
+
         return response()->json($arr, 200);
     }
+
 }
