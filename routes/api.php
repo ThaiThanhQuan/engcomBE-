@@ -16,6 +16,8 @@ use App\Http\Controllers\GetUserController;
 use App\Http\Controllers\GetClassesController;
 use App\Http\Controllers\GetBlogsController;
 use App\Http\Controllers\ApproveController;
+use App\Http\Controllers\AlertController;
+
 
 
 
@@ -106,7 +108,7 @@ Route::group([
     Route::resource('GetClasses', GetClassesController::class);
     Route::resource('getBlogs',GetBlogsController::class);
     Route::resource('approve',ApproveController::class);
-
+    Route::resource('alert',AlertController::class);
 });
 
 
