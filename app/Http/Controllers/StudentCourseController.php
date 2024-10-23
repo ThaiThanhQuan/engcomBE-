@@ -50,8 +50,8 @@ class StudentCourseController extends Controller
                     if ($videoContent) {
                         $lessonContent['content'] = [
                             'id' => $videoContent->id,
-                            'video' => $videoContent->video,
-                            'content' => $videoContent->content,
+                            'title' => $videoContent->title,
+                            'text' => $videoContent->text,
                             'lesson_id' => $lesson->id
                         ];
                     }
@@ -77,7 +77,7 @@ class StudentCourseController extends Controller
                         $questionArray = [];
                         foreach ($questions as $question) {
                             $questionArray[] = [
-                                'name' => $question->text,
+                                'text' => $question->text,
                                 'is_correct' => $question->is_correct,
                             ];
                         }
@@ -85,7 +85,7 @@ class StudentCourseController extends Controller
                         $lessonContent['content'] = [
                             'id' => $exerciseContent->id,
                             'title' => $exerciseContent->title,
-                            'content' => $exerciseContent->content,
+                            'text' => $exerciseContent->text,
                             'lesson_id' => $lesson->id,
                             'questions' => $questionArray
                         ];

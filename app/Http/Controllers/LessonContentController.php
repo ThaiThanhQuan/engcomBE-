@@ -60,8 +60,8 @@ class LessonContentController extends Controller
             $exercise->save();
 
             // Kiểm tra nếu có các tùy chọn (options) trong request
-            if ($request->has('options')) {
-                foreach ($request->options as $option) {
+            if ($request->has('questions')) {
+                foreach ($request->questions as $option) {
                     $exerciseOption = new ExerciseOption();
                     $exerciseOption->lesson_exercise_id = $exercise->id;
                     $exerciseOption->text = $option['text'];
@@ -138,15 +138,18 @@ class LessonContentController extends Controller
     {
         // Tìm bài học theo ID
         $lesson = Lesson::find($id);
-
+    
         // Kiểm tra xem bài học có tồn tại không
         if (!$lesson) {
             return response()->json(['message' => 'Lesson not found'], 404);
         }
-
+    
         // Lấy type của bài học
         $lessonType = $lesson->type;
-
+    
+        // Khởi tạo biến để lưu dữ liệu đã cập nhật
+        $updatedData = null;
+    
         // Cập nhật dữ liệu dựa trên loại
         switch ($lessonType) {
             case 0: // Video
@@ -155,28 +158,35 @@ class LessonContentController extends Controller
                     $lessonVideo->text = $request->text; // Cập nhật nội dung video
                     $lessonVideo->title = $request->title; // Cập nhật tiêu đề video
                     $lessonVideo->save(); // Lưu thay đổi
+    
+                    $updatedData = $lessonVideo; // Lưu dữ liệu đã cập nhật
                 } else {
                     return response()->json(['message' => 'Video not found'], 404);
                 }
                 break;
-
+    
             case 1: // Text
                 $lessonText = LessonText::where('lesson_id', $lesson->id)->first();
                 if ($lessonText) {
                     $lessonText->text = $request->text; // Cập nhật nội dung văn bản
                     $lessonText->title = $request->title; // Cập nhật tiêu đề văn bản
                     $lessonText->save(); // Lưu thay đổi
+    
+                    $updatedData = $lessonText; // Lưu dữ liệu đã cập nhật
                 } else {
                     return response()->json(['message' => 'Text lesson not found'], 404);
                 }
                 break;
+    
             case 2: // Exercise
                 $lessonExercise = LessonExercise::where('lesson_id', $lesson->id)->first();
                 if ($lessonExercise) {
                     $lessonExercise->title = $request->title; // Cập nhật tiêu đề bài tập
                     $lessonExercise->text = $request->text; // Cập nhật nội dung bài tập
                     $lessonExercise->save(); // Lưu thay đổi
-
+    
+                    $updatedData = $lessonExercise; // Lưu dữ liệu đã cập nhật
+    
                     // Cập nhật các tùy chọn (options) nếu có trong request
                     if ($request->has('options')) {
                         foreach ($request->options as $option) {
@@ -203,12 +213,17 @@ class LessonContentController extends Controller
                     return response()->json(['message' => 'Exercise not found'], 404);
                 }
                 break;
+    
             default:
                 return response()->json(['message' => 'Invalid lesson type'], 400);
         }
-
-        return response()->json(['message' => 'Lesson updated successfully'], 200);
+    
+        return response()->json([
+            'message' => 'Lesson updated successfully',
+            'data' => $updatedData // Trả về dữ liệu đã cập nhật
+        ], 200);
     }
+    
 
     public function destroy(string $id)
     {

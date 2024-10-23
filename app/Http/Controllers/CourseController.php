@@ -52,60 +52,59 @@ class CourseController extends Controller
     }
     public function ownShow(string $class_id)
     {
-        // Lấy các khóa học
-        $courses = Course::where('class_id', $class_id)->get();
-
+        // Lấy các khóa học mà deleted = 1
+        $courses = Course::where('class_id', $class_id)
+            ->where('deleted', 1) // Thay đổi ở đây
+            ->get();
+    
         // Khởi tạo mảng để lưu bài học và nội dung
         $lessons = [];
         $content = [];
-
+    
         foreach ($courses as $course) {
-            // Lấy thông tin người dùng từ user_id
-            if ($course->deleted == 0) {
-                continue; // Bỏ qua lớp học đã bị xóa
-            }
             // Lấy bài học tương ứng với khóa học
             $courseLessons = Lesson::with(['videos', 'lessonText', 'lessonExercises.exerciseOptions'])
                 ->where('course_id', $course['id'])
                 ->get();
-
+    
             foreach ($courseLessons as $lesson) {
                 $lessons[] = $lesson->only(['id', 'type', 'name', 'course_id']);
-
+    
                 // Thêm video vào content nếu có
                 foreach ($lesson->videos as $video) {
                     $content[] = [
                         'id' => $video->id,
-                        'video' => $video->video,
-                        'content' => $video->content,
+                        'title' => $video->title,
+                        'text' => $video->text,
                         'lesson_id' => $lesson->id,
                     ];
                 }
-
+    
                 // Thêm lesson text nếu có
                 foreach ($lesson->lessonText as $text) {
                     $content[] = [
+                        'id' => $text->id,
                         'text' => $text->text,
                         'lesson_id' => $lesson->id,
                     ];
                 }
-
+    
                 // Thêm exercise options nếu có
                 foreach ($lesson->lessonExercises as $exercise) {
                     $questions = [];
                     foreach ($exercise->exerciseOptions as $option) {
                         $questions[] = [
-                            'name' => $option->text,
+                            'text' => $option->text,
                             'is_correct' => $option->is_correct,
                         ];
                     }
-
+    
                     // Chỉ thêm bài tập nếu có câu hỏi
                     if (!empty($questions)) {
                         $content[] = [
                             'id' => $exercise->id,
                             'title' => $exercise->title,
-                            'content' => $exercise->content, // Hoặc một trường nào đó mà bạn muốn
+                            'text' => $exercise->text,
                             'lesson_id' => $lesson->id,
                             'questions' => $questions,
                         ];
@@ -113,15 +112,16 @@ class CourseController extends Controller
                 }
             }
         }
-
+    
         return response()->json([
             'data' => [
                 'courses' => $courses,
                 'lessons' => $lessons,
-                'content' => array_filter($content),  // Chỉ chứa nội dung có giá trị
+                'content' => array_filter($content),  
             ]
         ]);
     }
+    
 
 
     /**
@@ -156,7 +156,6 @@ class CourseController extends Controller
         $course = Course::where('id', $course_id)->first();
 
         if ($course) {
-            // Cập nhật cột 'deleted' về 0
             $course->deleted = 0;
             $course->save();
 

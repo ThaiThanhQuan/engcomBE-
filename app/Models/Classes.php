@@ -23,4 +23,8 @@ class Classes extends Model
     {
         return $this->belongsTo(User::class, 'user_id'); // 'user_id' là khóa ngoại trong bảng classes
     }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'class_id'); // class_id là khóa ngoại trong bảng comments
+    }
 }

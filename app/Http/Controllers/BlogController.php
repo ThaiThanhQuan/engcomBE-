@@ -64,21 +64,31 @@ class BlogController extends Controller
     // Đọc Blog theo ID
     public function show($id)
     {
-        $blog = Blog::find($id);
+        $blog = Blog::with('user')->find($id); 
+    
         if (!$blog) {
-            $arr = [
+            return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy bài viết',
-            ];
-            return response()->json($arr, 201);
+            ], 404); 
         }
+    
+        $user = $blog->user; 
         $arr = [
             'success' => true,
             'message' => 'Chi tiết bài viết',
-            'data' => $blog
+            'data' => [
+                'blog' => $blog,
+                'user' => [
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                ],
+            ],
         ];
-        return response()->json($arr, 201);
+    
+        return response()->json($arr, 200); // Thay đổi mã trạng thái về 200 cho thành công
     }
+    
     public function showList($userId)
     {
         $blogs = Blog::where('user_id', $userId)->get();

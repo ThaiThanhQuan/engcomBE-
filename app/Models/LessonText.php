@@ -9,7 +9,7 @@ class LessonText extends Model
 {
     use HasFactory;
     protected $table = 'lesson_text';
-    protected $fillable = ['id', 'content', 'lesson_id'];
+    protected $fillable = ['id', 'text','title', 'lesson_id'];
 
     public $timestamps = false;
 }
