@@ -11,6 +11,13 @@ use App\Http\Controllers\FakeThreadsController;
 use App\Http\Controllers\LikePostController;
 use App\Http\Controllers\CommentPostController;
 use App\Http\Controllers\LessonContentController;
+use App\Http\Controllers\GetUserController;
+use App\Http\Controllers\GetClassesController;
+use App\Http\Controllers\GetBlogsController;
+use App\Http\Controllers\ApproveController;
+
+
+
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -90,6 +97,12 @@ Route::group([
 
     Route::get('subscribetoprank/{type}', [TopRankController::class,'subscribe']);
     Route::get('classestoprank/{type}', [TopRankController::class,'classes']);
+
+    Route::resource('GetUser', GetUserController::class);
+    Route::resource('GetClasses', GetClassesController::class);
+    Route::resource('getBlogs',GetBlogsController::class);
+    Route::resource('approve',ApproveController::class);
+
 });
 
 
