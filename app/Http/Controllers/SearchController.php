@@ -16,7 +16,8 @@ class SearchController extends Controller
     $type = $request->type;
 
     // Tìm kiếm users
-    $usersQuery = User::where('name', 'LIKE', "%{$query}%");
+    $usersQuery = User::where('name', 'LIKE', "%{$query}%")
+    ->where('deleted', 1);
     
     if ($type === 'less') {
         $users = $usersQuery->limit(4)->get();
@@ -25,7 +26,8 @@ class SearchController extends Controller
     }
 
     // Tìm kiếm classes
-    $classesQuery = Classes::where('name', 'LIKE', "%{$query}%");
+    $classesQuery = Classes::where('name', 'LIKE', "%{$query}%")
+    ->where('deleted', 1);
     
     if ($type === 'less') {
         $classes = $classesQuery->limit(4)->get();

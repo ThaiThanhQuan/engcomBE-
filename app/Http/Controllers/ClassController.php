@@ -48,9 +48,6 @@ class ClassController extends Controller
             ];
 
             switch ($class->type) {
-                case 'cost':
-                    $costClasses[] = array_merge(['class' => $class], $infoData);
-                    break;
                 case 'private':
                     $privateClasses[] = array_merge(['class' => $class], $infoData);
                     break;
@@ -169,7 +166,7 @@ class ClassController extends Controller
         $class = Classes::findOrFail($id);
 
         // Kiểm tra giá trị của thuộc tính 'deleted'
-        if ($class->deleted == 0) {
+        if ($class->deleted === 0 && $class->deleted !== null) {
             return response()->json([
                 'message' => 'Class is deleted and cannot be accessed.',
             ], 403);
@@ -206,18 +203,25 @@ class ClassController extends Controller
     }
     public function ownShow(string $user_id)
     {
-        // Lấy tất cả lớp học theo user_id
-        $classes = Classes::where('user_id', $user_id)->get();
+        $classes = Classes::where('user_id', $user_id)
+        ->where(function($query) {
+            $query->where('deleted', NULL)
+                ->orWhere('deleted', 1);
+        })
+        ->get();
+
+
         // Khởi tạo mảng để lưu dữ liệu
         $classData = [];
 
         // Phân loại và lấy thông tin người dùng, số lượng comment
         foreach ($classes as $class) {
             // Lấy thông tin người dùng từ user_id
-            if ($class->deleted == 0) {
-                continue; // Bỏ qua lớp học đã bị xóa
-            }
             $user = User::find($class->user_id);
+            if (!$user) {
+                continue; // Bỏ qua nếu không tìm thấy người dùng
+            }
+
             $userInfo = [
                 'user_id' => $user->id,
                 'name' => $user->name,
@@ -249,6 +253,7 @@ class ClassController extends Controller
             'message' => 'success'
         ]);
     }
+
     public function ownStudent(string $class_id)
     {
         // Lấy lớp học theo class_id
@@ -482,13 +487,15 @@ class ClassController extends Controller
     public function topRate()
     {
         // Lấy lớp có số lượng đăng ký và bình luận cho cả private và public
-        $classes = Classes::whereIn('type', ['private', 'public'])
-            ->select('classes.*')
-            ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id') // Join với bảng subscribe
-            ->leftJoin('comments', 'classes.id', '=', 'comments.class_id') // Join với bảng comments
-            ->groupBy('classes.id') // Nhóm theo lớp
-            ->orderByRaw('COUNT(subscribe.id) DESC')
-            ->get();
+        $classes = Classes::where('deleted', 1) // Only include classes where deleted is 1
+        ->whereIn('type', ['private', 'public'])
+        ->select('classes.*')
+        ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id') // Join with subscribe table
+        ->leftJoin('comments', 'classes.id', '=', 'comments.class_id') // Join with comments table
+        ->groupBy('classes.id') // Group by class id
+        ->orderByRaw('COUNT(subscribe.id) DESC') // Order by the count of subscriptions in descending order
+        ->get();
+    
     
         // Tạo mảng kết quả để lưu thông tin về lớp
         $result = [];

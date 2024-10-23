@@ -13,7 +13,7 @@ class AlertController extends Controller
     public function index()
     {
         // Lấy tất cả các bản ghi từ bảng alerts
-        $alerts = Alert::all();
+        $alerts = Alert::orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'status' => true,
@@ -24,10 +24,6 @@ class AlertController extends Controller
 
     public function store(Request $request)
     {
-        // Xác thực file upload
-        $request->validate([
-            'thumbnail' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Tối đa 2MB
-        ]);
 
         // Khởi tạo mảng dữ liệu đầu vào
         $input = $request->all();

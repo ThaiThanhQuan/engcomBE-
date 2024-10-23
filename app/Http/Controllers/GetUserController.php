@@ -23,19 +23,6 @@ class GetUserController extends Controller
         ]);
     }
 
-   
-   
-    public function store(Request $request)
-    {
-        //
-    }
-
-    
-    public function show()
-    {
-        
-    }
-    
 
  
     public function update(Request $request, string $userid)

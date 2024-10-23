@@ -30,12 +30,14 @@ class TopRankController extends Controller
     public function subscribe(string $type){
         if($type == 'subscribe'){
             $Subscribes = Subscribe::join('users', 'subscribe.user_id', '=', 'users.id')
-                ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
-                         DB::raw('COUNT(subscribe.user_id) as rank_count'))
-                ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
-                ->orderBy('rank_count', 'desc')
-                ->limit(10)
-                ->get();
+            ->where('users.deleted', 1) // Ensure users are not deleted
+            ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
+                    DB::raw('COUNT(subscribe.user_id) as rank_count'))
+            ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
+            ->orderBy('rank_count', 'desc')
+            ->limit(10)
+            ->get();
+
         }
     
         return response()->json($Subscribes);
@@ -44,13 +46,15 @@ class TopRankController extends Controller
     public function classes(string $type){
         if($type == 'classes'){
             $Classes = Classes::join('users', 'classes.user_id', '=', 'users.id')
-                ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
-                         DB::raw('COUNT(classes.user_id) as rank_count'))
-                         ->where('classes.deleted', '!=', 0)
-                ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
-                ->orderBy('rank_count', 'desc')
-                ->limit(10)
-                ->get();
+            ->where('classes.deleted', 1) // Ensure classes are not deleted
+            ->where('users.deleted', 1) // Ensure users are not deleted
+            ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
+                     DB::raw('COUNT(classes.user_id) as rank_count'))
+            ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
+            ->orderBy('rank_count', 'desc')
+            ->limit(10)
+            ->get();
+        
         }
     
         return response()->json($Classes);

@@ -12,9 +12,10 @@ class BlogController extends Controller
     public function index()
     {
         $blogs = DB::table('blogs')
-            ->join('users', 'blogs.user_id', '=', 'users.id')
-            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content','blogs.thumbnail', 'users.name', 'users.avatar')
-            ->get();
+        ->join('users', 'blogs.user_id', '=', 'users.id')
+        ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'blogs.thumbnail', 'users.name', 'users.avatar')
+        ->where('blogs.deleted', 1)
+        ->get();
 
         $formattedBlogs = $blogs->map(function ($blog) {
             return [ 
@@ -86,12 +87,15 @@ class BlogController extends Controller
             ],
         ];
     
-        return response()->json($arr, 200); // Thay đổi mã trạng thái về 200 cho thành công
+        return response()->json($arr, 200); 
     }
     
     public function showList($userId)
     {
-        $blogs = Blog::where('user_id', $userId)->get();
+        $blogs = Blog::where('user_id', $userId)
+        ->where('deleted', 1)
+        ->get();
+    
     
         if ($blogs->isEmpty()) {
             return response()->json([

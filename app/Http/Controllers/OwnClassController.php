@@ -14,9 +14,10 @@ class OwnClassController extends Controller
 {
     public function show(string $user_id) {
         $classes = Subscribe::join('classes', 'subscribe.class_id', '=', 'classes.id')
-            ->where('subscribe.user_id', $user_id)
-            ->select('classes.*')
-            ->get();
+        ->where('subscribe.user_id', $user_id)
+        ->where('classes.deleted', 1) 
+        ->select('classes.*')
+        ->get();
     
         $infoDataArray = [];
     

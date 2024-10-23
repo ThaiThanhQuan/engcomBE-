@@ -10,6 +10,6 @@ class Alert extends Model
     use HasFactory;
     protected $table = 'alert';
     protected $fillable = ['id', 'title', 'thumbnail','content'];
-    public $timestamps = false;
+    public $timestamps = true;
 
 }
