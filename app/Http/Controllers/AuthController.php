@@ -54,6 +54,7 @@ class AuthController extends Controller
             'refresh_token' => $refreshToken,
             'user' => [
                 'id' => $userdata->id,
+                'uid' => $userdata->uid,
                 'name' => $userdata->name,
                 'phone_number' => $userdata->phone_number,
                 'email' => $userdata->email,
@@ -86,6 +87,7 @@ class AuthController extends Controller
             'refresh_token' => $refreshToken,
             'user' => [
                 'id' => $user->id,
+                'uid' => $user->uid,
                 'name' => $user->name,
                 'phone_number' => $user->phone_number,
                 'email' => $user->email,
@@ -182,6 +184,7 @@ class AuthController extends Controller
                     'status' => '1',
                     'user' => [
                         'id' => $existingUser->id,
+                        'uid' => $existingUser->uid,
                         'name' => $existingUser->name,
                         'phone_number' => $existingUser->phone_number,
                         'email' => $existingUser->email,
@@ -211,6 +214,7 @@ class AuthController extends Controller
                     'status' => '2',
                     'user' => [
                         'id' => $newUser->id,
+                        'uid' => $newUser->uid,
                         'name' => $newUser->name,
                         'phone_number' => $newUser->phone_number,
                         'email' => $newUser->email,

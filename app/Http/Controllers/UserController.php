@@ -30,7 +30,7 @@ class UserController extends Controller
             return response()->json($arr);
         }
 
-        $input['password'] = bcrypt($input['password']); // Mã hóa password
+        $input['password'] = bcrypt($input['password']); 
 
         $user = User::create($input);
         $arr = [
@@ -56,7 +56,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'data' => $user
-        ], 200); // Sử dụng 200 thay vì 201
+        ], 200); 
     }
 
 
