@@ -109,6 +109,11 @@ Route::group([
     Route::resource('getBlogs',GetBlogsController::class);
     Route::resource('approve',ApproveController::class);
     Route::resource('alert',AlertController::class);
+
+    Route::get('analysis/total',[AnalysisController::class,'total']);
+    Route::get('analysis/separate',[AnalysisController::class,'separate']);
+    Route::get('analysis/statistics',[AnalysisController::class,'statistics']);
+
 });
 
 

@@ -9,24 +9,6 @@ use Illuminate\Http\Request;
 
 class TopRankController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-    public function show(string $type)
-    {    
-    }
     public function subscribe(string $type){
         if($type == 'subscribe'){
             $Subscribes = Subscribe::join('users', 'subscribe.user_id', '=', 'users.id')
@@ -46,8 +28,8 @@ class TopRankController extends Controller
     public function classes(string $type){
         if($type == 'classes'){
             $Classes = Classes::join('users', 'classes.user_id', '=', 'users.id')
-            ->where('classes.deleted', 1) // Ensure classes are not deleted
-            ->where('users.deleted', 1) // Ensure users are not deleted
+            ->where('classes.deleted', 1)
+            ->where('users.deleted', 1) 
             ->select('users.id as user_id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at', 
                      DB::raw('COUNT(classes.user_id) as rank_count'))
             ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
@@ -62,16 +44,4 @@ class TopRankController extends Controller
         
     }
 
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }
