@@ -110,9 +110,15 @@ Route::group([
     Route::resource('approve',ApproveController::class);
     Route::resource('alert',AlertController::class);
 
+
     Route::post('password/forgot', [UserController::class, 'sendResetToken']);
     Route::post('password/reset', [UserController::class, 'resetpasswordwithToken']);
     Route::put('changepassWebUser', [UserController::class, 'changepassWebUser']);
+
+    Route::get('analysis/total',[AnalysisController::class,'total']);
+    Route::get('analysis/separate',[AnalysisController::class,'separate']);
+    Route::get('analysis/statistics',[AnalysisController::class,'statistics']);
+
 
 });
 
