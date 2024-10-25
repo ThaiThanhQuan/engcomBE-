@@ -109,6 +109,11 @@ Route::group([
     Route::resource('getBlogs',GetBlogsController::class);
     Route::resource('approve',ApproveController::class);
     Route::resource('alert',AlertController::class);
+
+    Route::post('password/forgot', [UserController::class, 'sendResetToken']);
+    Route::post('password/reset', [UserController::class, 'resetpasswordwithToken']);
+    Route::put('changepassWebUser', [UserController::class, 'changepassWebUser']);
+
 });
 
 

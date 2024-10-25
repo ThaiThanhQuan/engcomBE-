@@ -2,9 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResetPasswordMail;
+use Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+
+use Illuminate\Support\Str;
 class UserController extends Controller
 {
     public function index()
@@ -110,5 +117,132 @@ class UserController extends Controller
 
         return response()->json($arr, 200);
     }
+
+
+    public function sendResetToken(Request $request)
+    {
+        // Validate email
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+    
+        // Tìm người dùng
+        $user = DB::table('users')->where('email', $request->email)->first();
+    
+        if ($user) {
+            // Tạo token
+            $token = mt_rand(100000, 999999);
+            
+            // Kiểm tra xem email đã tồn tại trong bảng password_resets
+            $passwordReset = DB::table('password_resets')->where('email', $request->email)->first();
+    
+            if ($passwordReset) {
+                // Nếu tồn tại, cập nhật token và thời gian tạo
+                DB::table('password_resets')->where('email', $request->email)->update([
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+            } else {
+                // Nếu không tồn tại, thêm mới
+                DB::table('password_resets')->insert([
+                    'email' => $request->email,
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+            }
+    
+            // Tạo liên kết reset password, check xem uid có null k
+            $link = $token;
+    
+            if(is_null($user->uid))
+            {
+                return response()->json([
+                    'message' => 'User is registered via web only, not using Google or Facebook.'
+                ]);
+            } else
+            {
+                Mail::to($user->email)->send(new ResetPasswordMail($link));
+
+            }
+    
+           
+            return response()->json([
+                'success' => true,
+                'message' => 'Email has been sent with the reset code.',
+                'data' => [
+                    'link' => $link
+                ]
+            ]);
+        }
+    
+      
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found!',
+        ], 404);
+    }
+    
+
+public function resetpasswordwithToken(Request $request)
+{
+    // Validate request
+    $request->validate([
+        'password' => 'required|confirmed',
+        'token' => 'required'
+    ]);
+    $token = $request->input('token');
+    // Kiểm tra token trong database
+    $passwordReset = DB::table('password_resets')->where('token', $token)->first();
+
+    if (!$passwordReset) {
+        return response()->json([
+            'success' => false,
+            'message' => 'xai token',
+        ], 400);
+    }
+
+    // Cập nhật mật khẩu cho người dùng
+    $user = DB::table('users')->where('email', $passwordReset->email)->first();
+    if ($user) {
+        DB::table('users')->where('email', $passwordReset->email)->update([
+            'password' => bcrypt($request->password),
+            'updated_at' => now(),
+        ]);
+
+        // Xóa token đã sử dụng
+        DB::table('password_resets')->where('token', $token)->delete();
+
+        // Trả về phản hồi cho frontend
+        return response()->json([
+            'success' => true,
+            'message' => 'Password has been reset!',
+        ]);
+    }
+
+    // Trả về phản hồi cho frontend nếu người dùng không tìm thấy
+    return response()->json([
+        'success' => false,
+        'message' => 'User not found!',
+    ], 404);
+}
+
+public function changepassWebUser(Request $request) {
+    
+    $userid = $request->input('userid');
+    $password = $request->input('password');
+
+    $user = DB::table('users')->where('id', $userid)->first();
+
+    if ($user) {
+        DB::table('users')->where('id', $userid)->update([
+            'password' => Hash::make($password)
+        ]);
+
+    }
+    
+    return response()->json([
+        'message' => 'Change password success',
+    ]);
+}
 
 }
