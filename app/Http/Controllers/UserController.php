@@ -156,12 +156,12 @@ class UserController extends Controller
     
             if(is_null($user->uid))
             {
+                Mail::to($user->email)->send(new ResetPasswordMail($link));
+            } else
+            {
                 return response()->json([
                     'message' => 'User is registered via web only, not using Google or Facebook.'
                 ]);
-            } else
-            {
-                Mail::to($user->email)->send(new ResetPasswordMail($link));
 
             }
     
@@ -182,6 +182,34 @@ class UserController extends Controller
         ], 404);
     }
     
+    public function checktoken(Request $request)
+{
+    $email = $request->input('email');
+    $token = $request->input('token');
+
+    // Tìm token reset của email trong bảng password_resets
+    $checktoken = DB::table('password_resets')->where('email', $email)->first();
+
+    if ($checktoken) {
+        // Kiểm tra xem token có khớp với token lưu trong cơ sở dữ liệu không
+        if ($checktoken->token === $token) {
+            return response()->json([
+                'message' => 'success',
+            ]);
+        } else {
+            return response()->json([
+                'message' => "Token doesn't match",
+            ], 400);
+        }
+    } else {
+        return response()->json([
+            'message' => 'No reset request found for this email',
+        ], 404);
+    }
+
+
+
+}
 
 public function resetpasswordwithToken(Request $request)
 {

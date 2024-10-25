@@ -114,6 +114,7 @@ Route::group([
     Route::post('password/forgot', [UserController::class, 'sendResetToken']);
     Route::post('password/reset', [UserController::class, 'resetpasswordwithToken']);
     Route::put('changepassWebUser', [UserController::class, 'changepassWebUser']);
+    Route::post('checktoken', [UserController::class, 'checktoken']);
 
     Route::get('analysis/total',[AnalysisController::class,'total']);
     Route::get('analysis/separate',[AnalysisController::class,'separate']);
