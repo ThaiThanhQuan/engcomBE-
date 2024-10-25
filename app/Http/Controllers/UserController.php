@@ -198,7 +198,7 @@ class UserController extends Controller
             ]);
         } else {
             return response()->json([
-                'message' => "Token doesn't match",
+                'message' => "Code doesn't match",
             ], 400);
         }
     } else {
