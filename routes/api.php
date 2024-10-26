@@ -19,12 +19,6 @@ use App\Http\Controllers\ApproveController;
 use App\Http\Controllers\AlertController;
 
 
-
-
-
-
-
-
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
 // })->middleware('auth:sanctum');

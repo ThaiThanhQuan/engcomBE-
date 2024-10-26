@@ -37,7 +37,7 @@ class SaveBlogController extends Controller
         // Lấy tất cả bài viết của người dùng với thông tin từ bảng blogs
         $posts = DB::table('save-blogs')
             ->join('blogs', 'save-blogs.blog_id', '=', 'blogs.id')
-            ->select('blogs.id as blog_id','save-blogs.user_id' ,'blogs.title', 'blogs.content','save-blogs.id')
+            ->select('blogs.id as blog_id','save-blogs.user_id' ,'blogs.title', 'blogs.content','save-blogs.id','blogs.updated_at')
             ->where('save-blogs.user_id', $user_id)
             ->get();
     
