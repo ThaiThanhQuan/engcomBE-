@@ -321,17 +321,22 @@ class ClassController extends Controller
         $class = $request->query('class', 'all');
         $type = $request->query('type', 'all');
         $filter = $request->query('filter', 'all');
+        $perPage = $request->query('per_page', 8); // Số lượng mục trên mỗi trang
         $query = Classes::query();
         $query->where('deleted', 1);
+    
         if ($class == 'private') {
             $query->where('type', 'private');
         } else if ($class == 'public') {
             $query->where('type', 'public');
         }
+        
         if ($type != "all") {
             $query->where('subject', $type);
         }
+    
         $query->withCount(['subscribes', 'comments']);
+        
         if ($filter == 'newest') {
             $query->orderBy('updated_at', 'desc');
         } else if ($filter == 'lastest') {
@@ -339,10 +344,15 @@ class ClassController extends Controller
         } elseif ($filter == 'population') {
             $query->orderBy('subscribes_count', 'desc');
         }
-        $classes = $query->with('user')->get();
+    
+        // Sử dụng paginate để phân trang
+        $classes = $query->with('user')->paginate($perPage);
+    
         if ($classes->isEmpty()) {
             return response()->json(['message' => 'No classes found.'], 404);
         }
+    
+        // Chuyển đổi kết quả thành định dạng mong muốn
         $result = [];
         foreach ($classes as $class) {
             $result[] = [
@@ -372,8 +382,18 @@ class ClassController extends Controller
                 ]
             ];
         }
-        return response()->json($result);
+    
+        // Trả về phản hồi có thông tin phân trang
+        return response()->json([
+            'data' => $result,
+            'pagination' => [
+                'current_page' => $classes->currentPage(),
+                'total_pages' => $classes->lastPage(),
+                'total_items' => $classes->total(),
+            ]
+        ]);
     }
+    
 
     public function topRate()
     {
