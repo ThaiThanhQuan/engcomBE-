@@ -12,7 +12,7 @@ class BlogController extends Controller
     {
         $blogs = DB::table('blogs')
             ->join('users', 'blogs.user_id', '=', 'users.id')
-            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'blogs.thumbnail', 'users.name', 'users.avatar')
+            ->select('blogs.id', 'blogs.title', 'blogs.user_id','blogs.updated_at','blogs.content', 'blogs.thumbnail', 'users.name', 'users.avatar')
             ->where('blogs.deleted', 1)
             ->get();
         $formattedBlogs = $blogs->map(function ($blog) {
@@ -23,6 +23,7 @@ class BlogController extends Controller
                     'title' => $blog->title,
                     'thumbnail' => $blog->thumbnail,
                     'content' => $blog->content,
+                    'updated_at' => $blog->updated_at,
                 ],
                 'user' => [
                     'user' => $blog->name,
