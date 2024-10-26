@@ -10,29 +10,18 @@ class UploadController extends Controller
 {
     public function cart(Request $request)
     {
-        // Xác thực file upload
         $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Tối đa 2MB
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        // Kiểm tra xem có file upload không
         if ($request->hasFile('file')) {
-            // Lấy file
             $file = $request->file('file');
-
-            // Tạo tên file duy nhất
             $fileName = time() . '_' . $file->getClientOriginalName();
-
-            // Lưu file vào storage
             $path = $file->storeAs('uploads', $fileName, 'public');
-
-            // Trả về phản hồi với chỉ tên file
             return response()->json([
                 'success' => true,
-                'url' => $fileName, // Chỉ trả về tên file
+                'url' => $fileName,
             ]);
         }
-
         return response()->json([
             'success' => false,
             'message' => 'No file uploaded.',
@@ -41,52 +30,35 @@ class UploadController extends Controller
 
     public function deleteCart(Request $request)
     {
-        // Xác thực input
         $request->validate([
-            'url' => 'required|string', // Đảm bảo rằng 'url' được gửi lên
+            'url' => 'required|string',
         ]);
-    
-        $fileName = $request->input('url'); // Nhận tên file
-        $fullPath = 'uploads/' . $fileName; // Tạo đường dẫn
-    
-        // Kiểm tra xem file có tồn tại không
+        $fileName = $request->input('url');
+        $fullPath = 'uploads/' . $fileName;
         if (Storage::disk('public')->exists($fullPath)) {
-            // Xóa file
             Storage::disk('public')->delete($fullPath);
-    
             return response()->json([
                 'success' => true,
                 'message' => 'File deleted successfully.',
             ]);
         }
-    
         return response()->json([
             'success' => false,
             'message' => 'File not found.',
         ], 404);
     }
- 
+
     public function uploadVideo(Request $request)
     {
-        // Xác thực file upload
-        // Kiểm tra xem có file upload không
         if ($request->hasFile('file')) {
-            // Lấy file
             $file = $request->file('file');
-
-            // Tạo tên file duy nhất
             $fileName = time() . '_' . $file->getClientOriginalName();
-
-            // Lưu file vào storage
             $path = $file->storeAs('uploads/videos', $fileName, 'public');
-
-            // Trả về phản hồi với chỉ tên file
             return response()->json([
                 'success' => true,
-                'url' => $fileName, // Trả về tên file
+                'url' => $fileName,
             ]);
         }
-
         return response()->json([
             'success' => false,
             'message' => $request,
@@ -95,29 +67,21 @@ class UploadController extends Controller
 
     public function deleteVideo(Request $request)
     {
-        // Xác thực input
         $request->validate([
-            'url' => 'required|string', 
+            'url' => 'required|string',
         ]);
-    
-        $fileName = $request->input('url'); // Nhận tên file
-        $fullPath = 'uploads/videos/' . $fileName; // Tạo đường dẫn cho video
-    
-        // Kiểm tra xem file có tồn tại không
+        $fileName = $request->input('url');
+        $fullPath = 'uploads/videos/' . $fileName;
         if (Storage::disk('public')->exists($fullPath)) {
-            // Xóa file
             Storage::disk('public')->delete($fullPath);
-    
             return response()->json([
                 'success' => true,
                 'message' => 'Video deleted successfully.',
             ]);
         }
-    
         return response()->json([
             'success' => false,
             'message' => 'Video not found.',
         ], 404);
     }
-    
 }

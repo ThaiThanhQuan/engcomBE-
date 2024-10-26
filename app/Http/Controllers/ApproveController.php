@@ -20,40 +20,14 @@ class ApproveController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
     public function update(Request $request, string $class_id)
     {
         $class = Classes::find($class_id);
-        
         if (!$class) {
             return response()->json(['message' => 'Class not found'], 404);
         }
-    
         $class->deleted = $request->input('deleted');
-    
         $class->save();
-    
         return response()->json(['message' => 'Class updated successfully', 'class' => $class], 200);
-    }
-    
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

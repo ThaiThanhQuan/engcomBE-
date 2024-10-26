@@ -8,17 +8,15 @@ use Illuminate\Support\Facades\DB;
 use Validator;
 class BlogController extends Controller
 {
-    // Đọc tất cả Blogs
     public function index()
     {
         $blogs = DB::table('blogs')
-        ->join('users', 'blogs.user_id', '=', 'users.id')
-        ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'blogs.thumbnail', 'users.name', 'users.avatar')
-        ->where('blogs.deleted', 1)
-        ->get();
-
+            ->join('users', 'blogs.user_id', '=', 'users.id')
+            ->select('blogs.id', 'blogs.title', 'blogs.user_id', 'blogs.content', 'blogs.thumbnail', 'users.name', 'users.avatar')
+            ->where('blogs.deleted', 1)
+            ->get();
         $formattedBlogs = $blogs->map(function ($blog) {
-            return [ 
+            return [
                 'blog' => [
                     'id' => $blog->id,
                     'user_id' => $blog->user_id,
@@ -32,10 +30,9 @@ class BlogController extends Controller
                 ],
             ];
         });
-
-        return response()->json(['data' => $formattedBlogs,'message' => 'success', 'status' =>true]);
+        return response()->json(['data' => $formattedBlogs, 'message' => 'success', 'status' => true]);
     }
-    // Tạo Blog
+
     public function store(Request $request)
     {
         $input = $request->all();
@@ -44,7 +41,6 @@ class BlogController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
         ]);
-    
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -52,29 +48,25 @@ class BlogController extends Controller
                 'data' => $validator->errors(),
             ], 400);
         }
-    
-        // Tạo bài viết mới
         $blog = Blog::create($input);
-    
+
         return response()->json([
             'status' => true,
             'message' => "Thêm thành công",
             'data' => $blog,
         ], 201);
-    }    
-    // Đọc Blog theo ID
+    }
+
     public function show($id)
     {
-        $blog = Blog::with('user')->find($id); 
-    
+        $blog = Blog::with('user')->find($id);
         if (!$blog) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy bài viết',
-            ], 404); 
+            ], 404);
         }
-    
-        $user = $blog->user; 
+        $user = $blog->user;
         $arr = [
             'success' => true,
             'message' => 'Chi tiết bài viết',
@@ -86,24 +78,20 @@ class BlogController extends Controller
                 ],
             ],
         ];
-    
-        return response()->json($arr, 200); 
+        return response()->json($arr, 200);
     }
-    
+
     public function showList($userId)
     {
         $blogs = Blog::where('user_id', $userId)
-        ->where('deleted', 1)
-        ->get();
-    
-    
+            ->where('deleted', 1)
+            ->get();
         if ($blogs->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy bài viết nào',
             ], 404);
         }
-    
         return response()->json([
             'success' => true,
             'message' => 'Danh sách bài viết',
@@ -111,7 +99,7 @@ class BlogController extends Controller
         ], 200);
     }
 
-    // Cập nhật Blog
+
     public function update(Request $request, Blog $blog)
     {
         $input = $request->all();
@@ -140,32 +128,30 @@ class BlogController extends Controller
         return response()->json($arr, 200);
     }
 
-    // Xóa Blog
+
     public function destroy($blogid)
-{
-    $blog = Blog::find($blogid);
-    $blog->update(['deleted' => 0]);
-    $arr = [
-        'status' => true,
-        'message' => 'delete thanh cong',
-        'data' => $blog,
-    ];
+    {
+        $blog = Blog::find($blogid);
+        $blog->update(['deleted' => 0]);
+        $arr = [
+            'status' => true,
+            'message' => 'delete thanh cong',
+            'data' => $blog,
+        ];
+        return response()->json($arr, 200);
+    }
 
-    return response()->json($arr, 200);
-}
-
-    public function upload(Request $request) {
+    public function upload(Request $request)
+    {
         $request->validate([
             'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
         if ($request->file('file')) {
             $path = $request->file('file')->store('images', 'public');
-    
+
             return response()->json(['link' => asset('storage/' . $path)], 200);
         }
-    
         return response()->json(['error' => 'File not uploaded'], 400);
     }
-    
+
 }

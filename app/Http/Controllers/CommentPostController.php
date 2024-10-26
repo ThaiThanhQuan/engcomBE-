@@ -8,37 +8,24 @@ use Illuminate\Http\Request;
 
 class CommentPostController extends Controller
 {
-
-    public function index()
-    {
-        //
-    }
-
-
-
     public function store(Request $request)
-{
-    // Tạo một bình luận mới
-    $commentpost = new Comment_post();
-    $commentpost->user_id = $request->input('user_id');
-    $commentpost->post_id = $request->input('post_id');
-    $commentpost->content = $request->input('content');
-    $commentpost->save();
-
-    // Lấy thông tin người dùng để trả về
-    $user = User::find($commentpost->user_id);
-
-    return response()->json([
-        'commenter_user_id' => $user->id,
-        'commenter_name' => $user->name,
-        'commenter_avatar' => $user->avatar, 
-        'comment_id' => $commentpost->id,
-        'comment_content' => $commentpost->content,
-        'comment_created_at' => $commentpost->created_at,
-        'message' => 'thành công'
-    ], 201);
-}
-
+    {
+        $commentpost = new Comment_post();
+        $commentpost->user_id = $request->input('user_id');
+        $commentpost->post_id = $request->input('post_id');
+        $commentpost->content = $request->input('content');
+        $commentpost->save();
+        $user = User::find($commentpost->user_id);
+        return response()->json([
+            'commenter_user_id' => $user->id,
+            'commenter_name' => $user->name,
+            'commenter_avatar' => $user->avatar,
+            'comment_id' => $commentpost->id,
+            'comment_content' => $commentpost->content,
+            'comment_created_at' => $commentpost->created_at,
+            'message' => 'thành công'
+        ], 201);
+    }
 
     public function show(string $postId)
     {
@@ -59,21 +46,15 @@ class CommentPostController extends Controller
         ]);
     }
 
-
     public function destroy(string $commentId)
     {
         $commentpost = Comment_post::find($commentId);
-
         if (!$commentpost) {
             return response()->json([
                 'message' => 'commentpost not found'
             ], 404);
         }
-
-
         $commentpost->delete();
-
-
         return response()->json([
             'message' => 'xoa thanh cong ',
             'data' => $commentpost,

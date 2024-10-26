@@ -10,13 +10,8 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    public function index()
-    {
-        //
-    }
     public function show($postId)
     {
-        // Lấy tất cả bài đăng mà user_id không phải là $userId
         $post = Post::join('users', 'post.user_id', '=', 'users.id')
             ->leftJoin('gallery_post', 'post.id', '=', 'gallery_post.post_id')
             ->where('post.id', $postId)
@@ -27,27 +22,19 @@ class PostController extends Controller
                 'post.id as post_id',
                 'post.content as post_content',
                 'post.thumbnail as post_thumbnail',
-                'post.created_at as created_at' // Thêm trường created_at từ post
+                'post.created_at as created_at'
             )
             ->first();
-
-        // Kiểm tra xem có bài đăng nào không
         if (!$post) {
             return response()->json([
                 'message' => 'No posts found'
             ], 404);
         }
-
-        // Đếm số lượng likes và comments
         $likepostCount = Like_post::where('post_id', $postId)->count();
         $commentpostCount = Comment_post::where('post_id', $postId)->count();
-
-        // Lấy tất cả thumbnails từ bảng gallery_post
         $galleryThumbnails = Gallery_post::where('post_id', $postId)
             ->pluck('thumbnail')
-            ->toArray(); // Chuyển đổi thành mảng
-
-        // Chọn các trường cần thiết và loại bỏ user_id
+            ->toArray();
         return response()->json([
             'id' => $post->post_id,
             'content' => $post->post_content,
@@ -65,28 +52,18 @@ class PostController extends Controller
 
     public function getAll($userId)
     {
-        // Lấy tất cả bài đăng mà user_id không phải là $userId
         $posts = Post::where('user_id', '!=', $userId)->get();
-
-        // Kiểm tra xem có bài đăng nào không
         if ($posts->isEmpty()) {
             return response()->json([
                 'message' => 'No posts found'
             ], 404);
         }
-
-        // Khởi tạo mảng để lưu các bài đăng
         $postsData = $posts->map(function ($post) {
-            // Đếm số lượng likes và comments
             $likeCount = Like_post::where('post_id', $post->id)->count();
             $commentCount = Comment_post::where('post_id', $post->id)->count();
-
-            // Lấy tất cả thumbnails từ bảng gallery_post
             $galleryThumbnails = Gallery_post::where('post_id', $post->id)
                 ->pluck('thumbnail')
                 ->toArray();
-
-            // Lấy thông tin người dùng
             $user = $post->user;
             return [
                 'id' => $post->id,
@@ -102,23 +79,8 @@ class PostController extends Controller
                 ],
             ];
         });
-
-        // Trả về danh sách bài đăng
         return response()->json([
             'data' => $postsData
         ], 200);
-    }
-
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

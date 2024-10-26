@@ -13,30 +13,19 @@ class ClassController extends Controller
 {
     public function index()
     {
-        // Lấy tất cả lớp học
         $classes = Classes::all();
-
-        // Khởi tạo mảng để lưu dữ liệu theo từng loại
         $costClasses = [];
         $privateClasses = [];
         $publicClasses = [];
-
-        // Phân loại các lớp học theo type
         foreach ($classes as $class) {
-            // Lấy thông tin người dùng từ user_id
             $user = User::find($class->user_id);
             $userInfo = [
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
             ];
-
-            // Đếm số lượng comment cho lớp học
             $commentCount = Comment::where('class_id', $class->id)->count();
-            // Đếm số lượng người đăng ký cho lớp học
             $subscribeCount = Subscribe::where('class_id', $class->id)->count();
-
-            // Gộp dữ liệu vào InfoData
             $infoData = [
                 'info' => [
                     [
@@ -46,7 +35,6 @@ class ClassController extends Controller
                     ],
                 ],
             ];
-
             switch ($class->type) {
                 case 'private':
                     $privateClasses[] = array_merge(['class' => $class], $infoData);
@@ -56,7 +44,6 @@ class ClassController extends Controller
                     break;
             }
         }
-
         return response()->json([
             'data' => [
                 'cost' => $costClasses,
@@ -66,14 +53,13 @@ class ClassController extends Controller
             'message' => 'success'
         ]);
     }
+
     public function store(Request $request)
     {
         $input_cart = $request->input("carts");
         $input_courses = $request->input("courses");
         $input_lessons = $request->input("lessons");
         $input_contents = $request->input("contents");
-    
-        // Tạo lớp học mới và lấy ID
         $classID = DB::table("classes")->insertGetId([
             'user_id' => $input_cart['user_id'],
             'thumbnail' => $input_cart['thumbnail'],
@@ -83,38 +69,26 @@ class ClassController extends Controller
             'name' => $input_cart['name'],
             'subject' => $input_cart['subject'],
         ]);
-    
         foreach ($input_courses as $course) {
             $course_id = $course['id'];
-    
-            // Lọc bài học theo khóa học
             $lessonArr = array_filter($input_lessons, function ($item) use ($course_id) {
                 return $item['course_id'] === $course_id;
             });
-    
-            // Tạo khóa học mới và lấy ID
             $courseID = DB::table('course')->insertGetId([
                 'class_id' => $classID,
                 'name' => $course['name'],
             ]);
-    
             foreach ($lessonArr as $lesson) {
                 $lesson_id = $lesson['id'];
-    
-                // Lọc nội dung theo bài học
                 $contentArr = array_filter($input_contents, function ($item) use ($lesson_id) {
                     return $item['lesson_id'] === $lesson_id;
                 });
-    
-                // Tạo bài học mới và lấy ID
                 $lessonID = DB::table('lesson')->insertGetId([
                     'course_id' => $courseID,
                     'name' => $lesson['name'],
                     'type' => $lesson['type']
                 ]);
-    
                 foreach ($contentArr as $contents) {
-                    // Xử lý bài tập
                     if (isset($contents['questions']) && !empty($contents['questions'])) {
                         $exerciseID = DB::table('lesson_exercise')->insertGetId([
                             'lesson_id' => $lessonID,
@@ -128,26 +102,21 @@ class ClassController extends Controller
                                 'is_correct' => $item['is_correct']
                             ]);
                         }
-                    }
-                    // Xử lý video (bây giờ là title)
-                    else if (isset($contents['title']) && !empty($contents['title'])) {
+                    } else if (isset($contents['title']) && !empty($contents['title'])) {
                         DB::table('lesson_video')->insert([
                             'text' => $contents['text'],
-                            'title' => $contents['title'], // Thay video bằng title
+                            'title' => $contents['title'],
                             'lesson_id' => $lessonID,
                         ]);
-                    }
-                    // Xử lý text (bây giờ là text)
-                    else {
+                    } else {
                         DB::table('lesson_text')->insert([
-                            'text' => $contents['text'], // Chưa thay đổi
+                            'text' => $contents['text'],
                             'lesson_id' => $lessonID,
                         ]);
                     }
                 }
             }
         }
-    
         return response()->json([
             'message' => 'success',
             'status' => true,
@@ -159,32 +128,23 @@ class ClassController extends Controller
             ]
         ]);
     }
-    
+
     public function show(string $id)
     {
-        // Tìm đối tượng theo ID
         $class = Classes::findOrFail($id);
-
-        // Kiểm tra giá trị của thuộc tính 'deleted'
         if ($class->deleted === 0 && $class->deleted !== null) {
             return response()->json([
                 'message' => 'Class is deleted and cannot be accessed.',
             ], 403);
         }
-        // Lấy thông tin người dùng từ user_id
         $user = User::find($class->user_id);
         $userInfo = [
             'user_id' => $user->id,
             'name' => $user->name,
             'avatar' => $user->avatar,
         ];
-
-        // Đếm số lượng comment cho lớp học
         $commentCount = Comment::where('class_id', $class->id)->count();
-        // Đếm số lượng người đăng ký cho lớp học
         $subscribeCount = Subscribe::where('class_id', $class->id)->count();
-
-        // Gộp dữ liệu vào infoData
         $infoData = [
             'info' => [
                 [
@@ -194,46 +154,33 @@ class ClassController extends Controller
                 ],
             ],
         ];
-
-        // Trả về đối tượng dưới dạng JSON
         return response()->json([
             'message' => 'success',
-            'data' => array_merge(['class' => $class], $infoData) // Trả về đối tượng lớp học và thông tin người dùng
+            'data' => array_merge(['class' => $class], $infoData)
         ], 200);
     }
+
     public function ownShow(string $user_id)
     {
         $classes = Classes::where('user_id', $user_id)
-        ->where(function($query) {
-            $query->where('deleted', NULL)
-                ->orWhere('deleted', 1);
-        })
-        ->get();
-
-
-        // Khởi tạo mảng để lưu dữ liệu
+            ->where(function ($query) {
+                $query->where('deleted', NULL)
+                    ->orWhere('deleted', 1);
+            })
+            ->get();
         $classData = [];
-
-        // Phân loại và lấy thông tin người dùng, số lượng comment
         foreach ($classes as $class) {
-            // Lấy thông tin người dùng từ user_id
             $user = User::find($class->user_id);
             if (!$user) {
-                continue; // Bỏ qua nếu không tìm thấy người dùng
+                continue;
             }
-
             $userInfo = [
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
             ];
-
-            // Đếm số lượng comment cho lớp học
             $commentCount = Comment::where('class_id', $class->id)->count();
-            // Đếm số lượng người đăng ký cho lớp học
             $subscribeCount = Subscribe::where('class_id', $class->id)->count();
-
-            // Gộp dữ liệu vào InfoData
             $infoData = [
                 'info' => [
                     [
@@ -243,11 +190,8 @@ class ClassController extends Controller
                     ],
                 ],
             ];
-
-            // Thêm vào mảng dữ liệu với cấu trúc giống như yêu cầu trước
             $classData[] = array_merge(['class' => $class], $infoData);
         }
-
         return response()->json([
             'data' => $classData,
             'message' => 'success'
@@ -256,24 +200,16 @@ class ClassController extends Controller
 
     public function ownStudent(string $class_id)
     {
-        // Lấy lớp học theo class_id
         $class = Classes::findOrFail($class_id);
-        $course_id = $class->course_id; // Lấy course_id từ lớp học
-
-        // Lấy tất cả sinh viên đã đăng ký vào lớp học theo class_id
+        $course_id = $class->course_id;
         $subscribers = Subscribe::where('class_id', $class_id)->get();
         $studentsData = [];
-
-        // Lặp qua từng subscriber để lấy thông tin người dùng và số bài học đã học
         foreach ($subscribers as $subscriber) {
             $user = User::find($subscriber->user_id);
-
-            if ($user) { // Kiểm tra xem người dùng có tồn tại không
-                // Đếm số bài học đã hoàn thành
+            if ($user) {
                 $completedLessonsCount = Progress::where('user_id', $user->id)
                     ->where('course_id', $course_id)
                     ->count();
-
                 $studentsData[] = [
                     'user_id' => $user->id,
                     'name' => $user->name,
@@ -283,7 +219,6 @@ class ClassController extends Controller
                 ];
             }
         }
-
         return response()->json([
             'message' => 'success',
             'data' => $studentsData,
@@ -292,7 +227,6 @@ class ClassController extends Controller
 
     public function update(Request $request, $classId)
     {
-        // Lấy dữ liệu từ request
         $input = $request->only([
             'user_id',
             'name',
@@ -302,11 +236,7 @@ class ClassController extends Controller
             'type',
             'subject',
         ]);
-
-        // Cập nhật thông tin class
         $updated = DB::table("classes")->where('id', $classId)->update($input);
-
-        // Kiểm tra xem có bản ghi nào được cập nhật không
         if ($updated) {
             return response()->json([
                 'message' => 'Update success',
@@ -324,45 +254,32 @@ class ClassController extends Controller
 
     public function destroy($classId)
     {
-        // Tìm bản ghi với id tương ứng
         $class = Classes::where('id', $classId)->first();
 
         if ($class) {
             $class->deleted = 0;
             $class->save();
-
             return response()->json(['message' => 'class da duoc xoa']);
         }
-
         return response()->json(['message' => 'Class not found.'], 404);
     }
 
 
     public function moreShow($type)
     {
-        // Lấy tất cả lớp học theo loại
         $classes = Classes::where('type', $type)->get();
-
-        // Khởi tạo mảng để lưu dữ liệu
         $classData = [];
-
-        // Phân loại và lấy thông tin người dùng, số lượng comment
         foreach ($classes as $class) {
             if ($class->deleted == 0) {
-                continue; // Bỏ qua lớp học đã bị xóa
+                continue;
             }
-            // Lấy thông tin người dùng từ user_id
             $user = User::find($class->user_id);
             $userInfo = [
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
             ];
-
-            // Đếm số lượng comment cho lớp học
             $commentCount = Comment::where('class_id', $class->id)->count();
-
-            // Gộp dữ liệu vào InfoData
             $infoData = [
                 'info' => [
                     [
@@ -371,8 +288,6 @@ class ClassController extends Controller
                     ],
                 ],
             ];
-
-            // Thêm vào mảng dữ liệu với cấu trúc giống như yêu cầu trước
             $classData[] = array_merge(['class' => $class], $infoData);
         }
 
@@ -384,72 +299,50 @@ class ClassController extends Controller
 
     public function privateValidate(Request $req, string $class_id)
     {
-        // Tìm lớp dựa trên class_id
         $class = Classes::find($class_id);
-
-        // Nếu lớp không tồn tại, trả về lỗi
         if (!$class) {
             return response()->json([
                 'message' => 'Class not found.',
-            ], 404); // Không tìm thấy lớp
+            ], 404);
         }
-
-        // So sánh mật khẩu từ yêu cầu với mật khẩu của lớp
         if ($class->password && $req->password === $class->password) {
-            // Nếu mật khẩu đúng, trả về dữ liệu lớp
             return response()->json([
                 'message' => 'Password is correct.',
-                'data' => $class, // Trả về thông tin lớp
-            ], 200); // Mật khẩu đúng
+                'data' => $class,
+            ], 200);
         } else {
             return response()->json([
                 'message' => 'Invalid password.',
-            ], 403); // Mật khẩu sai
+            ], 403);
         }
     }
     public function filterData(Request $request)
     {
-        // Lấy các tham số từ query param
-        $class = $request->query('class', 'all'); // Mặc định là 'all' nếu không có giá trị
+        $class = $request->query('class', 'all');
         $type = $request->query('type', 'all');
         $filter = $request->query('filter', 'all');
-
         $query = Classes::query();
         $query->where('deleted', 1);
-
-        // Lọc theo loại lớp (private/public)
         if ($class == 'private') {
             $query->where('type', 'private');
         } else if ($class == 'public') {
             $query->where('type', 'public');
         }
-
-        // Lọc theo subject
         if ($type != "all") {
             $query->where('subject', $type);
         }
-
-        // Đếm số người đăng ký và bình luận
-        $query->withCount(['subscribes', 'comments']); // Đếm cả số người đăng ký và bình luận
-
-        // Sắp xếp theo điều kiện filter
+        $query->withCount(['subscribes', 'comments']);
         if ($filter == 'newest') {
-            $query->orderBy('updated_at', 'desc'); // Sắp xếp từ mới đến cũ
+            $query->orderBy('updated_at', 'desc');
         } else if ($filter == 'lastest') {
-            $query->orderBy('updated_at', 'asc'); // Sắp xếp từ cũ đến mới
+            $query->orderBy('updated_at', 'asc');
         } elseif ($filter == 'population') {
-            $query->orderBy('subscribes_count', 'desc'); // Sắp xếp theo số người đăng ký
+            $query->orderBy('subscribes_count', 'desc');
         }
-
-        // Lấy kết quả từ cơ sở dữ liệu
         $classes = $query->with('user')->get();
-
-        // Kiểm tra nếu không có dữ liệu
         if ($classes->isEmpty()) {
             return response()->json(['message' => 'No classes found.'], 404);
         }
-
-        // Tạo cấu trúc dữ liệu theo định dạng bạn cần
         $result = [];
         foreach ($classes as $class) {
             $result[] = [
@@ -473,38 +366,30 @@ class ClassController extends Controller
                             'name' => $class->user->name,
                             'avatar' => $class->user->avatar,
                         ],
-                        'comment_count' => $class->comments_count, // Lấy số lượng bình luận
-                        'subscribe_count' => $class->subscribes_count // Lấy số lượng đăng ký
+                        'comment_count' => $class->comments_count,
+                        'subscribe_count' => $class->subscribes_count
                     ]
                 ]
             ];
         }
-
-        // Trả về kết quả (JSON)
         return response()->json($result);
     }
 
     public function topRate()
     {
-        // Lấy lớp có số lượng đăng ký và bình luận cho cả private và public
-        $classes = Classes::where('deleted', 1) // Only include classes where deleted is 1
-        ->whereIn('type', ['private', 'public'])
-        ->select('classes.*')
-        ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id') // Join with subscribe table
-        ->leftJoin('comments', 'classes.id', '=', 'comments.class_id') // Join with comments table
-        ->groupBy('classes.id') // Group by class id
-        ->orderByRaw('COUNT(subscribe.id) DESC') // Order by the count of subscriptions in descending order
-        ->get();
-    
-    
-        // Tạo mảng kết quả để lưu thông tin về lớp
+        $classes = Classes::where('deleted', 1)
+            ->whereIn('type', ['private', 'public'])
+            ->select('classes.*')
+            ->leftJoin('subscribe', 'classes.id', '=', 'subscribe.class_id')
+            ->leftJoin('comments', 'classes.id', '=', 'comments.class_id')
+            ->groupBy('classes.id')
+            ->orderByRaw('COUNT(subscribe.id) DESC')
+            ->get();
         $result = [];
         foreach ($classes as $class) {
-            // Đếm số lượng đăng ký và bình luận
             $subscribeCount = Subscribe::where('class_id', $class->id)->count();
             $commentCount = Comment::where('class_id', $class->id)->count();
-            $classComments = Comment::where('class_id', $class->id)->get(); // Lấy danh sách bình luận
-    
+            $classComments = Comment::where('class_id', $class->id)->get();
             $result[] = [
                 'class' => [
                     'id' => $class->id,
@@ -526,27 +411,22 @@ class ClassController extends Controller
                             'name' => $class->user->name,
                             'avatar' => $class->user->avatar,
                         ],
-                        'comment_count' => $commentCount, 
-                        'subscribe_count' => $subscribeCount 
+                        'comment_count' => $commentCount,
+                        'subscribe_count' => $subscribeCount
                     ],
                 ],
-                'comments' => $classComments 
+                'comments' => $classComments
             ];
         }
-    
-        // Nhóm kết quả theo loại
         $groupedResult = [
             'private' => [],
             'public' => []
         ];
-    
         foreach ($result as $item) {
             $groupedResult[$item['class']['type']][] = $item;
         }
-    
-        // Trả về kết quả dưới dạng JSON
         return response()->json($groupedResult);
     }
-    
+
 
 }

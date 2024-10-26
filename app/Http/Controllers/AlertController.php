@@ -7,12 +7,8 @@ use Illuminate\Http\Request;
 
 class AlertController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // Lấy tất cả các bản ghi từ bảng alerts
         $alerts = Alert::orderBy('created_at', 'desc')->get();
 
         return response()->json([
@@ -21,31 +17,17 @@ class AlertController extends Controller
         ]);
     }
 
-
     public function store(Request $request)
     {
 
-        // Khởi tạo mảng dữ liệu đầu vào
         $input = $request->all();
-
-        // Kiểm tra xem có file upload không
         if ($request->hasFile('thumbnail')) {
-            // Lấy file
             $file = $request->file('thumbnail');
-
-            // Tạo tên file duy nhất
             $fileName = time() . '_' . $file->getClientOriginalName();
-
-            // Lưu file vào storage
             $path = $file->storeAs('uploads', $fileName, 'public');
-
-            // Thêm tên file vào input để lưu vào cơ sở dữ liệu
-            $input['thumbnail'] = $fileName; // Lưu tên file vào trường 'thumbnail'
+            $input['thumbnail'] = $fileName;
         }
-
-        // Tạo bản ghi mới trong bảng alerts
         $alert = Alert::create($input);
-
         return response()->json([
             'status' => true,
             'message' => "Thêm thành công",
@@ -53,14 +35,8 @@ class AlertController extends Controller
         ]);
     }
 
-    public function show(string $id)
-    {
-
-    }
-
     public function destroy(string $alertid)
     {
-        // Tìm bản ghi theo ID
         $alert = Alert::find($alertid);
         $alert->delete();
         return response()->json([
