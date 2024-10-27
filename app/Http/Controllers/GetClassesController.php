@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classes;
 use DB;
 use Illuminate\Http\Request;
 use function Laravel\Prompts\select;
@@ -18,4 +19,13 @@ class GetClassesController extends Controller
             'data' =>$classes
         ]);
     }
+    public function show($user_id)
+    {
+        $classes = Classes::where('user_id', $user_id)
+                        ->where('deleted', 0)
+                        ->get();
+    
+        return response()->json($classes);
+    }
+    
 }

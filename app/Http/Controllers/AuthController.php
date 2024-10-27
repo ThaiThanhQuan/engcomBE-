@@ -32,7 +32,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'field' => 'password_confirmation',
-                'error' => 'confirm password khong trung nhau',
+                'error' => 'confirm password does not match.',
             ], 422);
         }
         try {
@@ -42,7 +42,7 @@ class AuthController extends Controller
                 'password' => Hash::make($request->get('password')),
             ]);
         } catch (Exception $e) {
-            return response()->json(['error' => 'email da ton tai', 'field' => 'email',], 409);
+            return response()->json(['error' => 'email already exists.', 'field' => 'email',], 409);
         }
         $refreshToken = $this->createRefreshToken();
 
@@ -76,7 +76,7 @@ class AuthController extends Controller
         $credentials = request(['email', 'password']);
 
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Tai khoan hoac mat khau khong chinh xac'], 401);
+            return response()->json(['error' => 'Account or password is incorrect.'], 401);
         }
         $user = auth()->user();
         $refreshToken = $this->createRefreshToken();
