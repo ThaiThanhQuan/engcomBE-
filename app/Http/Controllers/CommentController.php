@@ -57,9 +57,10 @@ class CommentController extends Controller
                 'message' => 'Comment not found'
             ], 404);
         }
+        Comment::where('parent_id', $id)->delete();
         $comment->delete();
         return response()->json([
-            'message' => 'Comment deleted successfully',
+            'message' => 'Comment and related child comments deleted successfully',
             'data' => $comment
         ], 200);
     }
