@@ -11,9 +11,12 @@ class TopRankController extends Controller
 {
     public function subscribe(string $type)
     {
-        if ($type == 'subscribe') {
-            $Subscribes = Subscribe::join('users', 'subscribe.user_id', '=', 'users.id')
-                ->where('users.deleted', 1)
+        if ($type === 'subscribe') {
+            // Đếm số lượng đăng ký của giáo viên và lấy thông tin giáo viên
+            $Subscribes = Subscribe::join('classes', 'subscribe.class_id', '=', 'classes.id')
+                ->join('users', 'classes.user_id', '=', 'users.id') // Nối với bảng users qua user_id trong classes
+                ->where('users.deleted', 1) // Chỉ lấy người dùng không bị xóa
+                ->where('classes.deleted', 1) // Chỉ lấy lớp không bị xóa
                 ->select(
                     'users.id as user_id',
                     'users.name',
@@ -24,12 +27,15 @@ class TopRankController extends Controller
                 )
                 ->groupBy('users.id', 'users.name', 'users.avatar', 'users.role_id', 'users.created_at')
                 ->orderBy('rank_count', 'desc')
-                ->limit(10)
                 ->get();
-
+        } else {
+            $Subscribes = []; 
         }
+    
         return response()->json($Subscribes);
     }
+    
+    
 
     public function classes(string $type)
     {
