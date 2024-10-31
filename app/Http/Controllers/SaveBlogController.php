@@ -25,10 +25,12 @@ class SaveBlogController extends Controller
     public function show(string $user_id)
     {
         $posts = DB::table('save-blogs')
-            ->join('blogs', 'save-blogs.blog_id', '=', 'blogs.id')
-            ->select('blogs.id as blog_id', 'save-blogs.user_id', 'blogs.title', 'blogs.content', 'save-blogs.id', 'blogs.updated_at')
-            ->where('save-blogs.user_id', $user_id)
-            ->get();
+        ->join('blogs', 'save-blogs.blog_id', '=', 'blogs.id')
+        ->select('blogs.id as blog_id', 'save-blogs.user_id', 'blogs.title', 'blogs.content', 'save-blogs.id', 'blogs.updated_at')
+        ->where('save-blogs.user_id', $user_id)
+        ->where('blogs.deleted', 1) 
+        ->get();
+    
         return response()->json([
             'success' => true,
             'data' => $posts,

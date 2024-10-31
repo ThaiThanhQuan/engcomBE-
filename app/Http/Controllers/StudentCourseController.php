@@ -34,7 +34,7 @@ class StudentCourseController extends Controller
                     'course_id' => $lesson->course_id,
                     'content' => []
                 ];
-                if ($lesson->type === 0) {
+                if ($lesson->type == 0) {
                     $videoContent = DB::table('lesson_video')
                         ->where('lesson_id', $lesson->id)
                         ->first();
@@ -46,7 +46,7 @@ class StudentCourseController extends Controller
                             'lesson_id' => $lesson->id
                         ];
                     }
-                } elseif ($lesson->type === 1) { // Text
+                } elseif ($lesson->type == 1) { // Text
                     $textContent = DB::table('lesson_text')
                         ->where('lesson_id', $lesson->id)
                         ->first();
@@ -56,7 +56,7 @@ class StudentCourseController extends Controller
                             'lesson_id' => $lesson->id
                         ];
                     }
-                } elseif ($lesson->type === 2) {
+                } elseif ($lesson->type == 2) {
                     $exerciseContent = DB::table('lesson_exercise')
                         ->where('lesson_id', $lesson->id)
                         ->first();
