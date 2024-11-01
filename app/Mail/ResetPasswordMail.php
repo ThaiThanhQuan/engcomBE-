@@ -22,9 +22,10 @@ class ResetPasswordMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Reset Password')
+        return $this->from('encom.id.vn@gmail.com', 'Education community')
+                    ->subject('Reset Password')
                     ->html('<h1>Reset Your Password</h1>
-                            <p>To reset your password, please click the link below:</p>
+                            <p>To reset your password, please copy the code below:</p>
                             <a href="' . $this->link . '">' . $this->link . '</a>
                             <p>If you did not request a password reset, please ignore this email.</p>');
     }

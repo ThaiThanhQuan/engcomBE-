@@ -13,7 +13,7 @@ class Comment_post extends Model
 
     protected $fillable = ['user_id', 'post_id', 'content'];
 
-    public $timestamps = 'true';
+    public $timestamps = true;
 
     const UPDATED_AT = null;
 
