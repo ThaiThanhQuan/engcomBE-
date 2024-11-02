@@ -64,14 +64,15 @@ class CommentController extends Controller
             'data' => $comment
         ], 200);
     }
-
     public function showResponse(string $id)
     {
         $comments = Comment::join('users', 'comments.user_id', '=', 'users.id')
             ->where('comments.class_id', $id)
             ->whereNotNull('comments.parent_id')
+            ->orderBy('comments.created_at', 'asc') // Sắp xếp theo thời gian tạo
             ->select('comments.*', 'users.id as user_id', 'users.name as user_name', 'users.avatar as user_avatar')
             ->get();
+    
         $formattedComments = $comments->map(function ($comment) {
             return [
                 'id' => $comment->id,
@@ -87,6 +88,7 @@ class CommentController extends Controller
                 ],
             ];
         });
+    
         return response()->json([
             'data' => $formattedComments,
             'message' => 'success'
