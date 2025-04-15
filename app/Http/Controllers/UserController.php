@@ -123,13 +123,13 @@ class UserController extends Controller
                 ]);
             }
             $link = $token;
+            dd($user->uid); 
             if (is_null($user->uid)) {
                 Mail::to($user->email)->send(new ResetPasswordMail($link));
             } else {
                 return response()->json([
                     'message' => 'User is registered via web only, not using Google or Facebook.'
-                ]);
-
+                ], 400);
             }
             return response()->json([
                 'success' => true,
